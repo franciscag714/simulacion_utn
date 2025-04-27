@@ -53,6 +53,7 @@ promedio_por_corrida = []
 desvio_por_corrida = []
 varianza_por_corrida = []
 freq_relativa_por_corrida = []
+flujo_de_caja = []
 aciertos_por_corrida = 0
 color = str
 fila = 0
@@ -65,44 +66,33 @@ apuesta_inicial = 100
 
 
 # ---------------------------------------- Definicion de funciones --------------------------------
-def graficar_corrida(
-    freq_relativa_por_corrida,
-    promedio_por_corrida,
-    varianza_por_corrida,
-    desvio_por_corrida,
-):
-    fig, axs = plt.subplots(nrows=2, ncols=2)
+def graficar_corrida(freq_relativa_por_corrida, flujo_de_caja):
+    fig, axs = plt.subplots(nrows=1, ncols=2)
     fig.suptitle("Datos corrida " + str(i + 1))
 
-    x_vals = range(1, num_tiradas + 1)
+    x_vals_freq = range(1, len(freq_relativa_por_corrida) + 1)
+    flujo_de_caja_sin_inicial = flujo_de_caja[1:]
+    x_vals_flujo = range(1, len(flujo_de_caja_sin_inicial) + 1)
 
-    axs[0, 0].plot(x_vals, freq_relativa_por_corrida)
-    axs[0, 0].hlines(frecuencia_esperada, 1, num_tiradas, colors="r")
-    axs[0, 0].set_xlabel("Número de tirada")
-    axs[0, 0].set_ylabel("Frecuencia relativa")
-    axs[0, 0].legend(
-        ["Frec. relativa del número " + str(num_elegido), "Frecuencia esperada"]
+    # Gráfico de frecuencia relativa
+    axs[0].bar(x_vals_freq, freq_relativa_por_corrida, color="red", edgecolor="black")
+    axs[0].hlines(frecuencia_esperada, 1, len(freq_relativa_por_corrida), colors="blue")
+    axs[0].set_xlabel("n (número de tiradas)")
+    axs[0].set_ylabel("fr (frecuencia relativa)")
+    axs[0].legend(
+        [
+            "Frecuencia esperada 1/37",
+            "frsa (Frecuencia relativa de\nobtener la apuesta favorable segun n)",
+        ],
+        loc="best",
     )
 
-    axs[0, 1].plot(x_vals, promedio_por_corrida)
-    axs[0, 1].hlines(promedio_esperado, 1, num_tiradas, colors="r")
-    axs[0, 1].set_xlabel("Número de tirada")
-    axs[0, 1].set_ylabel("Promedio")
-    axs[0, 1].legend(["Progreso de la media" + str(num_elegido), "Promedio esperado"])
-
-    axs[1, 0].plot(x_vals[1:], varianza_por_corrida)
-    axs[1, 0].hlines(varianza_esperada, 2, num_tiradas, colors="r")
-    axs[1, 0].set_xlabel("Número de tirada")
-    axs[1, 0].set_ylabel("Varianza")
-    axs[1, 0].legend(
-        ["Progreso de la varianza" + str(num_elegido), "Varianza esperada"]
-    )
-
-    axs[1, 1].plot(x_vals[1:], desvio_por_corrida)
-    axs[1, 1].hlines(desvio_esperado, 2, num_tiradas, colors="r")
-    axs[1, 1].set_xlabel("Número de tirada")
-    axs[1, 1].set_ylabel("Desvío")
-    axs[1, 1].legend(["Progreso del desvio" + str(num_elegido), "Desvio esperado"])
+    # Gráfico de flujo de caja
+    axs[1].plot(x_vals_flujo, flujo_de_caja_sin_inicial, color="red")
+    axs[1].hlines(10000, 1, len(flujo_de_caja_sin_inicial), colors="blue")
+    axs[1].set_xlabel("n (número de tiradas)")
+    axs[1].set_ylabel("cc (cantidad de capital)")
+    axs[1].legend(["Flujo de caja", "Capital inicial)"], loc="best")
 
     plt.tight_layout()
     plt.show()
@@ -143,7 +133,7 @@ def zona_num(num):
 
 
 def paridad_num(num):
-    if num / 2 == 0:
+    if num % 2 == 0:
         par = True
     else:
         par = False
@@ -327,6 +317,7 @@ for i in range(num_corridas):
     desvio_por_corrida.clear()
     varianza_por_corrida.clear()
     freq_relativa_por_corrida.clear()
+    flujo_de_caja = [10000]
     aciertos_por_corrida = 0
     flag = False
     capital_inicial = 10000
@@ -356,7 +347,8 @@ for i in range(num_corridas):
                 par_aleatorio = paridad_num(valor)
             if est_elegida == "m":
                 ap, capital = martingala(
-                    apuesta_inicial, mundo, mundo_a_comparar, capital_inicial, eleccion)
+                    apuesta_inicial, mundo, mundo_a_comparar, capital_inicial, eleccion
+                )
             elif est_elegida == "f":
                 ap, capital, secuencia, indice = fibonacci(
                     apuesta_inicial,
@@ -364,7 +356,8 @@ for i in range(num_corridas):
                     mundo_a_comparar,
                     capital_inicial,
                     secuencia,
-                    indice, eleccion
+                    indice,
+                    eleccion,
                 )
             elif est_elegida == "d":
                 ap, capital = dalembert(
@@ -375,6 +368,8 @@ for i in range(num_corridas):
             if j > 0:
                 varianza_por_corrida.append(stats.variance(valores_por_corrida))
                 desvio_por_corrida.append(stats.stdev(valores_por_corrida))
+
+            flujo_de_caja.append(capital_inicial)
 
             if mundo_a_comparar == mundo:
                 print(
@@ -389,19 +384,16 @@ for i in range(num_corridas):
             print("Capital: ", capital)
             apuesta_inicial = ap
             capital_inicial = capital
-            if capital_inicial <= 0 or capital_inicial < apuesta_inicial:
-                print("banca rota")
-                break
-                # tiene que cortar
+            if cap_elegido == "f":
+                if capital_inicial <= 0 or capital_inicial < apuesta_inicial:
+                    print("banca rota")
+                    break
+                    # tiene que cortar
 
     print("Valores: ", valores_por_corrida)
     print(
         "Cantidad de aciertos: ", aciertos_por_corrida
     )  # esto tiene que ser para cuando elija num
-    # graficar_corrida(
-    #    freq_relativa_por_corrida,
-    #    promedio_por_corrida,
-    #    varianza_por_corrida,
-    #    desvio_por_corrida,
-    # )
+    graficar_corrida(freq_relativa_por_corrida, flujo_de_caja)
+
     print("---------------------------------------------")
