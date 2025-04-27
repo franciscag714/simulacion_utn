@@ -150,35 +150,65 @@ def paridad_num(num):
     return par
 
 
-def martingala(apuesta_inicial, num_elegido, num, cap):
+def martingala(apuesta_inicial, num_elegido, num, cap, elec):
     if num != num_elegido:
         cap = cap - apuesta_inicial
         apuesta = apuesta_inicial * 2
     else:
-        cap = cap + apuesta_inicial * 36
-        apuesta = apuesta_inicial
+        if elec == 1:
+            cap = cap + apuesta_inicial * 36
+            apuesta = apuesta_inicial
+        elif elec == 2:
+            cap = cap + apuesta_inicial * 2
+            apuesta = apuesta_inicial
+        elif elec == 3:
+            cap = cap + apuesta_inicial * 2
+            apuesta = apuesta_inicial
+        elif elec == 4 or elec == 5:
+            cap = cap + apuesta_inicial * 3
+            apuesta = apuesta_inicial
     return apuesta, cap
 
 
-def dalembert(apuesta_inicial, mundo, mundo_a_comparar, cap):
+def dalembert(apuesta_inicial, mundo, mundo_a_comparar, cap, elec):
     if mundo != mundo_a_comparar:
         cap = cap - apuesta_inicial
         apuesta = apuesta_inicial + 1
     else:
-        cap = cap + apuesta_inicial * 36
-        apuesta = max(1, apuesta_inicial - 1)
+        if elec == 1:
+            cap = cap + apuesta_inicial * 36
+            apuesta = max(1, apuesta_inicial - 1)
+        elif elec == 2:
+            cap = cap + apuesta_inicial * 2
+            apuesta = max(1, apuesta_inicial - 1)
+        elif elec == 3:
+            cap = cap + apuesta_inicial * 2
+            apuesta = max(1, apuesta_inicial - 1)
+        elif elec == 4 or elec == 5:
+            cap = cap + apuesta_inicial * 3
+            apuesta = max(1, apuesta_inicial - 1)
     return apuesta, cap
 
 
-def fibonacci(apuesta_inicial, mundo, mundo_a_comparar, cap, secuencia, indice):
+def fibonacci(apuesta_inicial, mundo, mundo_a_comparar, cap, secuencia, indice, elec):
     if mundo != mundo_a_comparar:
         cap = cap - apuesta_inicial
         indice += 1
         if indice >= len(secuencia):
             secuencia.append(secuencia[-1] + secuencia[-2])
     else:
-        cap = cap + apuesta_inicial * 36
-        indice = max(0, indice - 2)
+        if elec == 1:
+            cap = cap + apuesta_inicial * 36
+            indice = max(0, indice - 2)
+        elif elec == 2:
+            cap = cap + apuesta_inicial * 2
+            indice = max(0, indice - 2)
+        elif elec == 3:
+            cap = cap + apuesta_inicial * 2
+            indice = max(0, indice - 2)
+        elif elec == 4 or elec == 5:
+            cap = cap + apuesta_inicial * 3
+            indice = max(0, indice - 2)
     apuesta = secuencia[indice]
     return apuesta, cap, secuencia, indice
 
@@ -326,8 +356,7 @@ for i in range(num_corridas):
                 par_aleatorio = paridad_num(valor)
             if est_elegida == "m":
                 ap, capital = martingala(
-                    apuesta_inicial, mundo, mundo_a_comparar, capital_inicial
-                )
+                    apuesta_inicial, mundo, mundo_a_comparar, capital_inicial, eleccion)
             elif est_elegida == "f":
                 ap, capital, secuencia, indice = fibonacci(
                     apuesta_inicial,
@@ -335,11 +364,11 @@ for i in range(num_corridas):
                     mundo_a_comparar,
                     capital_inicial,
                     secuencia,
-                    indice,
+                    indice, eleccion
                 )
             elif est_elegida == "d":
                 ap, capital = dalembert(
-                    apuesta_inicial, mundo, mundo_a_comparar, capital_inicial
+                    apuesta_inicial, mundo, mundo_a_comparar, capital_inicial, eleccion
                 )
             elif est_elegida == "o":
                 print("o")
