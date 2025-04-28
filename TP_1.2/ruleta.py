@@ -425,6 +425,7 @@ for i in range(num_corridas):
                     print("banca rota")
                     break
                     # tiene que cortar
+                    
 
     print("Valores: ", valores_por_corrida)
     print(
