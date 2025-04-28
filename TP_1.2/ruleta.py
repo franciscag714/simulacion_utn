@@ -59,8 +59,8 @@ apuesta_inicial = 100
 
 
 # ---------------------------------------- Definicion de funciones --------------------------------
-def graficar_corrida(freq_relativa_por_corrida, flujo_de_caja):
-    fig, axs = plt.subplots(nrows=1, ncols=2)
+def graficar_corrida(freq_relativa_por_corrida, flujo_de_caja, ganadas, perdidas, n):
+    fig, axs = plt.subplots(nrows=1, ncols=3, figsize=(14, 6))
     fig.suptitle("Datos corrida " + str(i + 1))
 
     x_vals_freq = range(1, len(freq_relativa_por_corrida) + 1)
@@ -87,7 +87,20 @@ def graficar_corrida(freq_relativa_por_corrida, flujo_de_caja):
     axs[1].set_ylabel("cc (cantidad de capital)")
     axs[1].legend(["Flujo de caja", "Capital inicial)"], loc="best")
 
+    # Gráfica de porcentaje ganadas vs perdidas
+    labels = "Aciertos", "Perdidas"
+    size = [ganadas / n * 100, perdidas / n * 100]
+    axs[2].pie(
+        size,
+        labels=labels,
+        autopct="%1.1f%%",
+        colors=["red", "lightblue"],
+        startangle=90,
+    )
+    axs[2].set_title("Porcentaje de aciertos vs.\nPorcentaje de perdidas")
+
     plt.tight_layout()
+    plt.subplots_adjust(left=0.05, right=0.95, top=0.85, bottom=0.1, wspace=0.4)
     plt.show()
 
 
@@ -404,6 +417,12 @@ for i in range(num_corridas):
     print("Valores: ", valores_por_corrida)
     print("Cantidad de aciertos: ", aciertos_por_corrida)
     print("Cantidad de perdidas: ", perdidas_por_corrida)
-    graficar_corrida(freq_relativa_por_corrida, flujo_de_caja)
+    graficar_corrida(
+        freq_relativa_por_corrida,
+        flujo_de_caja,
+        aciertos_por_corrida,
+        perdidas_por_corrida,
+        num_tiradas,
+    )
 
     print("---------------------------------------------")
