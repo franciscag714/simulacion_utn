@@ -157,7 +157,11 @@ def martingala(apuesta_inicial, num_elegido, num, cap, elec):
         elif elec == 4 or elec == 5:
             cap = cap + apuesta_inicial * 3
             apuesta = apuesta_inicial
-    return apuesta, cap
+    if cap > apuesta_inicial:
+        cont_ganancia = cont_ganancia + 1
+    elif cap < apuesta_inicial:
+        cont_perdida = cont_perdida + 1
+    return apuesta, cap, cont_ganancia , cont_perdida
 
 
 def dalembert(apuesta_inicial, mundo, mundo_a_comparar, cap, elec):
@@ -177,7 +181,11 @@ def dalembert(apuesta_inicial, mundo, mundo_a_comparar, cap, elec):
         elif elec == 4 or elec == 5:
             cap = cap + apuesta_inicial * 3
             apuesta = max(1, apuesta_inicial - 1)
-    return apuesta, cap
+    if cap > apuesta_inicial:
+        cont_ganancia = cont_ganancia + 1
+    elif cap < apuesta_inicial:
+        cont_perdida = cont_perdida + 1
+    return apuesta, cap, cont_ganancia , cont_perdida
 
 
 def fibonacci(apuesta_inicial, mundo, mundo_a_comparar, cap, secuencia, indice, elec):
@@ -200,7 +208,35 @@ def fibonacci(apuesta_inicial, mundo, mundo_a_comparar, cap, secuencia, indice, 
             cap = cap + apuesta_inicial * 3
             indice = max(0, indice - 2)
     apuesta = secuencia[indice]
-    return apuesta, cap, secuencia, indice
+    if cap > apuesta_inicial:
+        cont_ganancia = cont_ganancia + 1
+    elif cap < apuesta_inicial:
+        cont_perdida = cont_perdida + 1
+    return apuesta, cap, secuencia, indice, cont_ganancia , cont_perdida
+
+def paroli(apuesta_inicial, num_elegido, num, cap, elec):
+    if num != num_elegido:
+        cap = cap - apuesta_inicial
+        apuesta = apuesta_inicial
+    else:
+        if elec == 1:
+            cap = cap + apuesta_inicial * 36
+            apuesta = apuesta_inicial * 2
+        elif elec == 2:
+            cap = cap + apuesta_inicial * 2
+            apuesta = apuesta_inicial * 2
+        elif elec == 3:
+            cap = cap + apuesta_inicial * 2
+            apuesta = apuesta_inicial * 2
+        elif elec == 4 or elec == 5:
+            cap = cap + apuesta_inicial * 3
+            apuesta = apuesta_inicial * 2
+    if cap > apuesta_inicial:
+        cont_ganancia = cont_ganancia + 1
+    elif cap < apuesta_inicial:
+        cont_perdida = cont_perdida + 1
+    return apuesta, cap, cont_ganancia , cont_perdida
+
 
 
 # ----------------------------------- Definicion de argumentos -----------------------------------
@@ -346,11 +382,11 @@ for i in range(num_corridas):
                 zona_aleatorio = zona_num(valor)
                 par_aleatorio = paridad_num(valor)
             if est_elegida == "m":
-                ap, capital = martingala(
+                ap, capital, cont_g,cont_p = martingala(
                     apuesta_inicial, mundo, mundo_a_comparar, capital_inicial, eleccion
                 )
             elif est_elegida == "f":
-                ap, capital, secuencia, indice = fibonacci(
+                ap, capital, secuencia, indice, cont_g,cont_p = fibonacci(
                     apuesta_inicial,
                     mundo,
                     mundo_a_comparar,
@@ -361,10 +397,10 @@ for i in range(num_corridas):
                 )
             elif est_elegida == "d":
                 ap, capital = dalembert(
-                    apuesta_inicial, mundo, mundo_a_comparar, capital_inicial, eleccion
+                    apuesta_inicial, mundo, mundo_a_comparar, capital_inicial, eleccion, cont_g,cont_p
                 )
             elif est_elegida == "o":
-                print("o")
+                ap, capital, cont_g,cont_p = paroli(apuesta_inicial, mundo, mundo_a_comparar, capital_inicial, eleccion)
             if j > 0:
                 varianza_por_corrida.append(stats.variance(valores_por_corrida))
                 desvio_por_corrida.append(stats.stdev(valores_por_corrida))
