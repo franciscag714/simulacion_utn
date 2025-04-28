@@ -1,6 +1,5 @@
 import random
 import sys
-import statistics as stats
 import matplotlib.pyplot as plt
 import argparse
 
@@ -44,21 +43,15 @@ ruleta = [
     35,
     36,
 ]
-promedio_esperado = stats.mean(ruleta)
-varianza_esperada = stats.variance(ruleta)
-desvio_esperado = stats.stdev(ruleta)
 frecuencia_esperada = 1 / 37
 valores_por_corrida = []
-promedio_por_corrida = []
-desvio_por_corrida = []
-varianza_por_corrida = []
 freq_relativa_por_corrida = []
 flujo_de_caja = []
 aciertos_por_corrida = 0
 color = str
 fila = 0
 zona = 0
-par = False
+resultado = ""
 MAX_TIRADAS = 10000
 MAX_CORRIDAS = 20
 capital_inicial = 10000
@@ -134,10 +127,10 @@ def zona_num(num):
 
 def paridad_num(num):
     if num % 2 == 0:
-        par = True
+        resultado = "par"
     else:
-        par = False
-    return par
+        resultado = "impar"
+    return resultado
 
 
 def martingala(apuesta_inicial, num_elegido, num, cap, elec):
@@ -147,21 +140,17 @@ def martingala(apuesta_inicial, num_elegido, num, cap, elec):
     else:
         if elec == 1:
             cap = cap + apuesta_inicial * 36
-            apuesta = apuesta_inicial
+            apuesta = 100
         elif elec == 2:
             cap = cap + apuesta_inicial * 2
-            apuesta = apuesta_inicial
+            apuesta = 100
         elif elec == 3:
             cap = cap + apuesta_inicial * 2
-            apuesta = apuesta_inicial
+            apuesta = 100
         elif elec == 4 or elec == 5:
             cap = cap + apuesta_inicial * 3
-            apuesta = apuesta_inicial
-    if cap > apuesta_inicial:
-        cont_ganancia = cont_ganancia + 1
-    elif cap < apuesta_inicial:
-        cont_perdida = cont_perdida + 1
-    return apuesta, cap, cont_ganancia , cont_perdida
+            apuesta = 100
+    return apuesta, cap
 
 
 def dalembert(apuesta_inicial, mundo, mundo_a_comparar, cap, elec):
@@ -181,11 +170,7 @@ def dalembert(apuesta_inicial, mundo, mundo_a_comparar, cap, elec):
         elif elec == 4 or elec == 5:
             cap = cap + apuesta_inicial * 3
             apuesta = max(1, apuesta_inicial - 1)
-    if cap > apuesta_inicial:
-        cont_ganancia = cont_ganancia + 1
-    elif cap < apuesta_inicial:
-        cont_perdida = cont_perdida + 1
-    return apuesta, cap, cont_ganancia , cont_perdida
+    return apuesta, cap
 
 
 def fibonacci(apuesta_inicial, mundo, mundo_a_comparar, cap, secuencia, indice, elec):
@@ -208,11 +193,8 @@ def fibonacci(apuesta_inicial, mundo, mundo_a_comparar, cap, secuencia, indice, 
             cap = cap + apuesta_inicial * 3
             indice = max(0, indice - 2)
     apuesta = secuencia[indice]
-    if cap > apuesta_inicial:
-        cont_ganancia = cont_ganancia + 1
-    elif cap < apuesta_inicial:
-        cont_perdida = cont_perdida + 1
-    return apuesta, cap, secuencia, indice, cont_ganancia , cont_perdida
+    return apuesta, cap, secuencia, indice
+
 
 def paroli(apuesta_inicial, num_elegido, num, cap, elec):
     if num != num_elegido:
@@ -231,12 +213,7 @@ def paroli(apuesta_inicial, num_elegido, num, cap, elec):
         elif elec == 4 or elec == 5:
             cap = cap + apuesta_inicial * 3
             apuesta = apuesta_inicial * 2
-    if cap > apuesta_inicial:
-        cont_ganancia = cont_ganancia + 1
-    elif cap < apuesta_inicial:
-        cont_perdida = cont_perdida + 1
-    return apuesta, cap, cont_ganancia , cont_perdida
-
+    return apuesta, cap
 
 
 # ----------------------------------- Definicion de argumentos -----------------------------------
@@ -253,10 +230,16 @@ parser.add_argument(
     "-s", type=str, required=True, help="Estrategia elegida (m, f, d, o)"
 )
 parser.add_argument("-a", type=str, required=True, help="Cantidad de capital (i, f)")
-opciones.add_argument("-b", type=str, help="Color (ROJO O NEGRO)")
-opciones.add_argument("-p", type=str, help="Par o Impar")
-opciones.add_argument("-z", type=str, help="1era,2da o 3era Docena")
-opciones.add_argument("-d", type=str, help="1era, 2da o 3era columna")
+opciones.add_argument("-b", type=str, help="Color rojo o negro")
+opciones.add_argument("-p", type=str, help="par o impar")
+opciones.add_argument(
+    "-z", type=int, help="1 (primera docena), 2 (segunda docena) o 3 (tercera docena)"
+)
+opciones.add_argument(
+    "-d",
+    type=int,
+    help="1 (primera columna), 2 (segunda columna) o 3 (tercera columna)",
+)
 
 # ------------------------------------------- Parseo de argumentos -----------------------------------------------------
 args = parser.parse_args()
@@ -277,6 +260,7 @@ if args.c > MAX_TIRADAS:
 if args.n > MAX_CORRIDAS:
     print(f"Error: la cantidad de corridas no debe superar {MAX_CORRIDAS}.")
     sys.exit(1)
+
 if args.e is not None:
     if args.e < 0 or args.e > 36:
         print("Error: el número elegido (-e) debe estar entre 0 y 36.")
@@ -291,6 +275,7 @@ if args.s != "m" and args.s != "f" and args.s != "d" and args.s != "o":
 if args.a != "f" and args.a != "i":
     print("Error: el capital elegido (-a) debe ser finito (f) o infinito (i)")
     sys.exit(1)
+
 if args.b is not None:
     if args.b != "rojo" and args.b != "negro":
         print("Error: el color elegido (-b) debe ser 'rojo' o 'negro'.")
@@ -304,36 +289,28 @@ if args.p is not None:
         sys.exit(1)
     mundo = args.p
     eleccion = 3
+
 if args.z is not None:
-    if (
-        args.z != "primera docena"
-        and args.z != "segunda docena"
-        and args.z != "tercera docena"
-    ):
+    if args.z != 1 and args.z != 2 and args.z != 3:
         print(
-            "Error: la zona elegida (-z) debe ser 'primera docena', 'segunda docena' o 'tercera docena'."
+            "Error: la zona elegida (-z) debe ser 1 (primera docena), 2 (segunda docena) o 3 (tercera docena)."
         )
         sys.exit(1)
     mundo = args.z
     eleccion = 4
+
 if args.d is not None:
-    if (
-        args.d != "primera columna"
-        and args.d != "segunda columna"
-        and args.d != "tercera columna"
-    ):
+    if args.d != 1 and args.d != 2 and args.d != 3:
         print(
-            "Error: la columna elegida (-d) debe ser 'primera columna', 'segunda columna' o 'tercera columna'."
+            "Error: la columna elegida (-d) debe ser 1 (primera columna), 2 (segunda columna) o 3 (tercera columna)."
         )
         sys.exit(1)
     mundo = args.d
     eleccion = 5
 
-
 print(
     f"Tiradas: {args.c}, Corridas: {args.n}, Número elegido: {args.e}, Estrategia elegida: {args.s}, Capital elegido: {args.a}, Color elegido: {args.b}, Paridad elegida: {args.p}, Zona elegida: {args.z}, Columna elegida: {args.d} "
 )
-
 
 num_tiradas = args.c
 num_corridas = args.n
@@ -349,88 +326,84 @@ columna_elegida = args.d
 for i in range(num_corridas):
     print("Corrida numero", i + 1)
     valores_por_corrida.clear()
-    promedio_por_corrida.clear()
-    desvio_por_corrida.clear()
-    varianza_por_corrida.clear()
     freq_relativa_por_corrida.clear()
     flujo_de_caja = [10000]
     aciertos_por_corrida = 0
-    flag = False
+    perdidas_por_corrida = 0
     capital_inicial = 10000
     apuesta_inicial = 100
     secuencia = [1, 1, 2, 3, 5, 8, 13, 21]
     indice = 0
 
     for j in range(num_tiradas):
-        if flag == False:
-            valor = random.randint(0, 36)
-            if args.e is not None:
-                mundo_a_comparar = valor
-            if args.b is not None:
-                mundo_a_comparar = color_num(valor)
-            if args.p is not None:
-                mundo_a_comparar = paridad_num(valor)
-            if args.z is not None:
-                mundo_a_comparar = zona_num(valor)
-            if args.d is not None:
-                mundo_a_comparar = columna_num(valor)
-            valores_por_corrida.append(valor)
-            promedio_por_corrida.append(stats.mean(valores_por_corrida))
-            if valor != 0:
-                color_aleatorio = color_num(valor)
-                columna_aleatorio = columna_num(valor)
-                zona_aleatorio = zona_num(valor)
-                par_aleatorio = paridad_num(valor)
-            if est_elegida == "m":
-                ap, capital, cont_g,cont_p = martingala(
-                    apuesta_inicial, mundo, mundo_a_comparar, capital_inicial, eleccion
-                )
-            elif est_elegida == "f":
-                ap, capital, secuencia, indice, cont_g,cont_p = fibonacci(
-                    apuesta_inicial,
-                    mundo,
-                    mundo_a_comparar,
-                    capital_inicial,
-                    secuencia,
-                    indice,
-                    eleccion,
-                )
-            elif est_elegida == "d":
-                ap, capital = dalembert(
-                    apuesta_inicial, mundo, mundo_a_comparar, capital_inicial, eleccion, cont_g,cont_p
-                )
-            elif est_elegida == "o":
-                ap, capital, cont_g,cont_p = paroli(apuesta_inicial, mundo, mundo_a_comparar, capital_inicial, eleccion)
-            if j > 0:
-                varianza_por_corrida.append(stats.variance(valores_por_corrida))
-                desvio_por_corrida.append(stats.stdev(valores_por_corrida))
+        valor = random.randint(0, 36)
+        if args.e is not None:
+            mundo_a_comparar = valor
+        if args.b is not None:
+            mundo_a_comparar = color_num(valor)
+        if args.p is not None:
+            mundo_a_comparar = paridad_num(valor)
+        if args.z is not None:
+            mundo_a_comparar = zona_num(valor)
+        if args.d is not None:
+            mundo_a_comparar = columna_num(valor)
+        valores_por_corrida.append(valor)
 
-            flujo_de_caja.append(capital_inicial)
+        if valor != 0:
+            color_aleatorio = color_num(valor)
+            columna_aleatorio = columna_num(valor)
+            zona_aleatorio = zona_num(valor)
+            par_aleatorio = paridad_num(valor)
 
-            if mundo_a_comparar == mundo:
-                print(
-                    "El mundo elegido:",
-                    mundo,
-                    ", tuvo acierto en la tirada numero",
-                    j + 1,
-                )
-                aciertos_por_corrida += 1
-            freq_relativa_por_corrida.append(aciertos_por_corrida / (j + 1))
+        if est_elegida == "m":
+            ap, capital = martingala(
+                apuesta_inicial, mundo, mundo_a_comparar, capital_inicial, eleccion
+            )
+        elif est_elegida == "f":
+            ap, capital, secuencia, indice = fibonacci(
+                apuesta_inicial,
+                mundo,
+                mundo_a_comparar,
+                capital_inicial,
+                secuencia,
+                indice,
+                eleccion,
+            )
+        elif est_elegida == "d":
+            ap, capital = dalembert(
+                apuesta_inicial, mundo, mundo_a_comparar, capital_inicial, eleccion
+            )
+        elif est_elegida == "o":
+            ap, capital = paroli(
+                apuesta_inicial, mundo, mundo_a_comparar, capital_inicial, eleccion
+            )
 
-            print("Capital: ", capital)
-            apuesta_inicial = ap
-            capital_inicial = capital
-            if cap_elegido == "f":
-                if capital_inicial <= 0 or capital_inicial < apuesta_inicial:
-                    print("banca rota")
-                    break
-                    # tiene que cortar
-                    
+        flujo_de_caja.append(capital_inicial)
+
+        if mundo_a_comparar == mundo:
+            print(
+                "El mundo elegido:",
+                mundo,
+                ", tuvo acierto en la tirada numero",
+                j + 1,
+            )
+            aciertos_por_corrida += 1
+        else:
+            perdidas_por_corrida += 1
+        freq_relativa_por_corrida.append(aciertos_por_corrida / (j + 1))
+
+        print("Capital: ", capital)
+        apuesta_inicial = ap
+        capital_inicial = capital
+
+        if cap_elegido == "f":
+            if capital_inicial <= 0 or capital_inicial < apuesta_inicial:
+                print("Banca rota")
+                break
 
     print("Valores: ", valores_por_corrida)
-    print(
-        "Cantidad de aciertos: ", aciertos_por_corrida
-    )  # esto tiene que ser para cuando elija num
+    print("Cantidad de aciertos: ", aciertos_por_corrida)
+    print("Cantidad de perdidas: ", perdidas_por_corrida)
     graficar_corrida(freq_relativa_por_corrida, flujo_de_caja)
 
     print("---------------------------------------------")
