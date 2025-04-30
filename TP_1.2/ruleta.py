@@ -2,6 +2,7 @@ import random
 import sys
 import matplotlib.pyplot as plt
 import argparse
+import numpy as np
 
 # --------------------------------- Definicion de variables ------------------------------------
 ruleta = [
@@ -43,6 +44,7 @@ ruleta = [
     35,
     36,
 ]
+frecuencia_esperada = 1 / 37
 valores_por_corrida = []
 freq_relativa_por_corrida = []
 flujo_de_caja = []
@@ -55,12 +57,12 @@ MAX_TIRADAS = 10000
 MAX_CORRIDAS = 20
 capital_inicial = 10000
 apuesta_inicial = 100
+todas_freq_rel = []       
+todas_flujos = [] 
 
 
 # ---------------------------------------- Definicion de funciones --------------------------------
-def graficar_corrida(
-    freq_relativa_por_corrida, flujo_de_caja, ganadas, perdidas, n, freq_esperada
-):
+def graficar_corrida(freq_relativa_por_corrida, flujo_de_caja, ganadas, perdidas, n,i, freq_esperada):
     fig, axs = plt.subplots(nrows=1, ncols=3, figsize=(14, 6))
     fig.suptitle("Datos corrida " + str(i + 1))
 
@@ -75,7 +77,7 @@ def graficar_corrida(
     axs[0].set_ylabel("fr (frecuencia relativa)")
     axs[0].legend(
         [
-            f"Frecuencia esperada ({freq_esperada:.3f})",
+            "Frecuencia esperada " + str(round(freq_esperada,3)),
             "frsa (Frecuencia relativa de\nobtener la apuesta favorable segun n)",
         ],
         loc="best",
@@ -102,6 +104,56 @@ def graficar_corrida(
 
     plt.tight_layout()
     plt.subplots_adjust(left=0.05, right=0.95, top=0.85, bottom=0.1, wspace=0.4)
+    plt.show()
+
+
+def graficar_todas_corridas(todas_freq, todas_flujos, frecuencia_esperada):
+    import numpy as np
+    num_corridas = len(todas_freq)
+    max_n = max(len(fr) for fr in todas_freq)
+
+    fig, ax = plt.subplots(figsize=(14, 6))
+    fig.suptitle(f"Simulación: {num_corridas} corridas superpuestas")
+
+    # ===== CÓDIGO PARA FRECUENCIA RELATIVA (COMENTADO) =====
+    # width = 0.8 / num_corridas            # ancho total de 0.8 repartido entre las corridas
+    # x_base = np.arange(max_n) + 1         # posiciones 1,2,...,max_n
+    # for idx, fr in enumerate(todas_freq):
+    #     x = x_base + idx * width - 0.4
+    #     fr_padded = np.array(list(fr) + [np.nan] * (max_n - len(fr)))
+    #     ax.bar(
+    #         x,
+    #         fr_padded,
+    #         width=width,
+    #         alpha=0.6,
+    #         label=f'Corrida {idx+1}',
+    #         edgecolor='black'
+    #     )
+    # ax.hlines(
+    #     frecuencia_esperada,
+    #     xmin=1 - 0.4,
+    #     xmax=max_n + 0.4,
+    #     colors="blue",
+    #     linestyles='dashed',
+    #     label=f"Frecuencia esperada ({frecuencia_esperada:.3f})"
+    # )
+    # ax.set_xlabel("n (número de tiradas)")
+    # ax.set_ylabel("Frecuencia relativa")
+    # ax.set_title("Frecuencia relativa por corrida (barras agrupadas)")
+    # ax.set_xticks(x_base)
+    # ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left', fontsize='small')
+
+    # ===== GRÁFICO DE FLUJO DE CAJA =====
+    for idx, flujo in enumerate(todas_flujos):
+        ax.plot(range(len(flujo)), flujo, alpha=0.5, label=f'Corrida {idx+1}')
+    ax.hlines(10000, 0, max(len(f) for f in todas_flujos),
+              colors="blue", linestyles='dashed', label="Capital inicial")
+    ax.set_xlabel("n (número de tiradas)")
+    ax.set_ylabel("Capital")
+    ax.set_title("Flujo de caja por corrida")
+    ax.legend(bbox_to_anchor=(1.05,1), loc='upper left', fontsize='small')
+
+    plt.tight_layout(rect=[0, 0.03, 1, 0.95])
     plt.show()
 
 
@@ -280,8 +332,8 @@ if args.e is not None:
         print("Error: el número elegido (-e) debe estar entre 0 y 36.")
         sys.exit(1)
     mundo = args.e
-    eleccion = 1
     frecuencia_esperada = 1 / 37
+    eleccion = 1
 
 if args.s != "m" and args.s != "f" and args.s != "d" and args.s != "o":
     print("Error: la estrategia elegida (-s) debe ser 'f', 'm', 'd' u 'o'")
@@ -296,16 +348,16 @@ if args.b is not None:
         print("Error: el color elegido (-b) debe ser 'rojo' o 'negro'.")
         sys.exit(1)
     mundo = args.b
+    frecuencia_esperada = 18/37
     eleccion = 2
-    frecuencia_esperada = 18 / 37
 
 if args.p is not None:
     if args.p != "par" and args.p != "impar":
         print("Error: la paridad elegida (-p) debe ser 'par' o 'impar'.")
         sys.exit(1)
     mundo = args.p
+    frecuencia_esperada = 18/37
     eleccion = 3
-    frecuencia_esperada = 18 / 37
 
 if args.z is not None:
     if args.z != 1 and args.z != 2 and args.z != 3:
@@ -314,8 +366,8 @@ if args.z is not None:
         )
         sys.exit(1)
     mundo = args.z
+    frecuencia_esperada = 12/37
     eleccion = 4
-    frecuencia_esperada = 12 / 37
 
 if args.d is not None:
     if args.d != 1 and args.d != 2 and args.d != 3:
@@ -324,8 +376,8 @@ if args.d is not None:
         )
         sys.exit(1)
     mundo = args.d
+    frecuencia_esperada = 12/37
     eleccion = 5
-    frecuencia_esperada = 12 / 37
 
 print(
     f"Tiradas: {args.c}, Corridas: {args.n}, Número elegido: {args.e}, Estrategia elegida: {args.s}, Capital elegido: {args.a}, Color elegido: {args.b}, Paridad elegida: {args.p}, Zona elegida: {args.z}, Columna elegida: {args.d} "
@@ -342,94 +394,103 @@ zona_elegida = args.z
 columna_elegida = args.d
 
 # --------------------------------------------------------- Inicio de la simulación -------------------------------------------------
-for i in range(num_corridas):
-    print("Corrida numero", i + 1)
-    valores_por_corrida.clear()
-    freq_relativa_por_corrida.clear()
-    flujo_de_caja = [10000]
-    aciertos_por_corrida = 0
-    perdidas_por_corrida = 0
-    capital_inicial = 10000
-    apuesta_inicial = 100
-    secuencia = [1, 1, 2, 3, 5, 8, 13, 21]
-    indice = 0
 
-    for j in range(num_tiradas):
-        valor = random.randint(0, 36)
-        if args.e is not None:
-            mundo_a_comparar = valor
-        if args.b is not None:
-            mundo_a_comparar = color_num(valor)
-        if args.p is not None:
-            mundo_a_comparar = paridad_num(valor)
-        if args.z is not None:
-            mundo_a_comparar = zona_num(valor)
-        if args.d is not None:
-            mundo_a_comparar = columna_num(valor)
-        valores_por_corrida.append(valor)
 
-        if valor != 0:
-            color_aleatorio = color_num(valor)
-            columna_aleatorio = columna_num(valor)
-            zona_aleatorio = zona_num(valor)
-            par_aleatorio = paridad_num(valor)
+def simular():
+        
+    for i in range(num_corridas):
+        print("Corrida numero", i + 1)
+        valores_por_corrida.clear()
+        freq_relativa_por_corrida.clear()
+        flujo_de_caja = [10000]
+        aciertos_por_corrida = 0
+        perdidas_por_corrida = 0
+        capital_inicial = 10000
+        apuesta_inicial = 100
+        secuencia = [1, 1, 2, 3, 5, 8, 13, 21]
+        indice = 0
 
-        if est_elegida == "m":
-            ap, capital = martingala(
-                apuesta_inicial, mundo, mundo_a_comparar, capital_inicial, eleccion
-            )
-        elif est_elegida == "f":
-            ap, capital, secuencia, indice = fibonacci(
-                apuesta_inicial,
-                mundo,
-                mundo_a_comparar,
-                capital_inicial,
-                secuencia,
-                indice,
-                eleccion,
-            )
-        elif est_elegida == "d":
-            ap, capital = dalembert(
-                apuesta_inicial, mundo, mundo_a_comparar, capital_inicial, eleccion
-            )
-        elif est_elegida == "o":
-            ap, capital = paroli(
-                apuesta_inicial, mundo, mundo_a_comparar, capital_inicial, eleccion
-            )
+        for j in range(num_tiradas):
+            valor = random.randint(0, 36)
+            if args.e is not None:
+                mundo_a_comparar = valor
+            if args.b is not None:
+                mundo_a_comparar = color_num(valor)
+            if args.p is not None:
+                mundo_a_comparar = paridad_num(valor)
+            if args.z is not None:
+                mundo_a_comparar = zona_num(valor)
+            if args.d is not None:
+                mundo_a_comparar = columna_num(valor)
+            valores_por_corrida.append(valor)
+            """
+            if valor != 0:
+                color_aleatorio = color_num(valor)
+                columna_aleatorio = columna_num(valor)
+                zona_aleatorio = zona_num(valor)
+                par_aleatorio = paridad_num(valor)
+            """
+            if est_elegida == "m":
+                ap, capital = martingala(
+                    apuesta_inicial, mundo, mundo_a_comparar, capital_inicial, eleccion
+                )
+            elif est_elegida == "f":
+                ap, capital, secuencia, indice = fibonacci(
+                    apuesta_inicial,
+                    mundo,
+                    mundo_a_comparar,
+                    capital_inicial,
+                    secuencia,
+                    indice,
+                    eleccion,
+                )
+            elif est_elegida == "d":
+                ap, capital = dalembert(
+                    apuesta_inicial, mundo, mundo_a_comparar, capital_inicial, eleccion
+                )
+            elif est_elegida == "o":
+                ap, capital = paroli(
+                    apuesta_inicial, mundo, mundo_a_comparar, capital_inicial, eleccion
+                )
 
-        flujo_de_caja.append(capital_inicial)
+            flujo_de_caja.append(capital)
 
-        if mundo_a_comparar == mundo:
-            print(
-                "El mundo elegido:",
-                mundo,
-                ", tuvo acierto en la tirada numero",
-                j + 1,
-            )
-            aciertos_por_corrida += 1
-        else:
-            perdidas_por_corrida += 1
-        freq_relativa_por_corrida.append(aciertos_por_corrida / (j + 1))
+            if mundo_a_comparar == mundo:
 
-        print("Capital: ", capital)
-        apuesta_inicial = ap
-        capital_inicial = capital
+                aciertos_por_corrida += 1
+            else:
+                perdidas_por_corrida += 1
+            freq_relativa_por_corrida.append(aciertos_por_corrida / (j + 1))
 
-        if cap_elegido == "f":
-            if capital_inicial <= 0 or capital_inicial < apuesta_inicial:
-                print("Banca rota")
-                break
+            apuesta_inicial = ap
+            capital_inicial = capital
 
-    print("Valores: ", valores_por_corrida)
-    print("Cantidad de aciertos: ", aciertos_por_corrida)
-    print("Cantidad de perdidas: ", perdidas_por_corrida)
-    graficar_corrida(
+            if cap_elegido == "f":
+                if capital_inicial <= 0 or capital_inicial < apuesta_inicial:
+                    print("Banca rota")
+                    break
+        
+        todas_freq_rel.append(freq_relativa_por_corrida)
+        todas_flujos.append(flujo_de_caja)
+
+        print("Cantidad de aciertos: ", aciertos_por_corrida)
+        print("Cantidad de perdidas: ", perdidas_por_corrida)
+
+        
+        graficar_corrida(
         freq_relativa_por_corrida,
         flujo_de_caja,
         aciertos_por_corrida,
         perdidas_por_corrida,
         num_tiradas,
+        i,
         frecuencia_esperada,
-    )
+        )
+        
+        print("---------------------------------------------")
 
-    print("---------------------------------------------")
+    graficar_todas_corridas(todas_freq_rel, todas_flujos, frecuencia_esperada)
+
+
+
+simular()
