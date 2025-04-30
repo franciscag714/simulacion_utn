@@ -43,7 +43,6 @@ ruleta = [
     35,
     36,
 ]
-frecuencia_esperada = 1 / 37
 valores_por_corrida = []
 freq_relativa_por_corrida = []
 flujo_de_caja = []
@@ -59,7 +58,9 @@ apuesta_inicial = 100
 
 
 # ---------------------------------------- Definicion de funciones --------------------------------
-def graficar_corrida(freq_relativa_por_corrida, flujo_de_caja, ganadas, perdidas, n):
+def graficar_corrida(
+    freq_relativa_por_corrida, flujo_de_caja, ganadas, perdidas, n, freq_esperada
+):
     fig, axs = plt.subplots(nrows=1, ncols=3, figsize=(14, 6))
     fig.suptitle("Datos corrida " + str(i + 1))
 
@@ -69,12 +70,12 @@ def graficar_corrida(freq_relativa_por_corrida, flujo_de_caja, ganadas, perdidas
 
     # Gráfico de frecuencia relativa
     axs[0].bar(x_vals_freq, freq_relativa_por_corrida, color="red", edgecolor="black")
-    axs[0].hlines(frecuencia_esperada, 1, len(freq_relativa_por_corrida), colors="blue")
+    axs[0].hlines(freq_esperada, 1, len(freq_relativa_por_corrida), colors="blue")
     axs[0].set_xlabel("n (número de tiradas)")
     axs[0].set_ylabel("fr (frecuencia relativa)")
     axs[0].legend(
         [
-            "Frecuencia esperada 1/37",
+            f"Frecuencia esperada ({freq_esperada:.3f})",
             "frsa (Frecuencia relativa de\nobtener la apuesta favorable segun n)",
         ],
         loc="best",
@@ -280,6 +281,7 @@ if args.e is not None:
         sys.exit(1)
     mundo = args.e
     eleccion = 1
+    frecuencia_esperada = 1 / 37
 
 if args.s != "m" and args.s != "f" and args.s != "d" and args.s != "o":
     print("Error: la estrategia elegida (-s) debe ser 'f', 'm', 'd' u 'o'")
@@ -295,6 +297,7 @@ if args.b is not None:
         sys.exit(1)
     mundo = args.b
     eleccion = 2
+    frecuencia_esperada = 18 / 37
 
 if args.p is not None:
     if args.p != "par" and args.p != "impar":
@@ -302,6 +305,7 @@ if args.p is not None:
         sys.exit(1)
     mundo = args.p
     eleccion = 3
+    frecuencia_esperada = 18 / 37
 
 if args.z is not None:
     if args.z != 1 and args.z != 2 and args.z != 3:
@@ -311,6 +315,7 @@ if args.z is not None:
         sys.exit(1)
     mundo = args.z
     eleccion = 4
+    frecuencia_esperada = 12 / 37
 
 if args.d is not None:
     if args.d != 1 and args.d != 2 and args.d != 3:
@@ -320,6 +325,7 @@ if args.d is not None:
         sys.exit(1)
     mundo = args.d
     eleccion = 5
+    frecuencia_esperada = 12 / 37
 
 print(
     f"Tiradas: {args.c}, Corridas: {args.n}, Número elegido: {args.e}, Estrategia elegida: {args.s}, Capital elegido: {args.a}, Color elegido: {args.b}, Paridad elegida: {args.p}, Zona elegida: {args.z}, Columna elegida: {args.d} "
@@ -423,6 +429,7 @@ for i in range(num_corridas):
         aciertos_por_corrida,
         perdidas_por_corrida,
         num_tiradas,
+        frecuencia_esperada,
     )
 
     print("---------------------------------------------")
