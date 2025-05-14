@@ -17,21 +17,30 @@ class RandomGeneratorGLC :
         return self.seed / self.m
     
 
+import time
+
 class MiddleSquare:
     def __init__(self, seed=None):
         if seed is None:
-            seed = int(time.time()) % 10000 
+            seed = int(time.time()) 
+        else:
+            seed = int(str(seed).zfill(10)[-10:])
         self.seed = seed
-        self.m = 10000
+        self.mod = 10**10
 
     def next(self):
-        sq = str(self.seed**2).zfill(8)
-        mid = sq[2:6]
-        self.seed = int(mid)
+        square = self.seed ** 2
+        sq_str = str(square).zfill(20) 
+        mid_start = (len(sq_str) - 10) // 2
+        mid = sq_str[mid_start:mid_start + 10]
+        if mid == '0000000000':
+            self.seed = 1 
+        else:
+            self.seed = int(mid)
         return self.seed
 
     def capear(self):
-        return self.seed / self.m
+        return self.seed / self.mod
 
 
 class FibonacciGenerator:
