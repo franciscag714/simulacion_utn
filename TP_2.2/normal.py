@@ -1,0 +1,1 @@
+# def simular_normal():

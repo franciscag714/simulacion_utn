@@ -4,14 +4,14 @@ import numpy as np
 
 
 def simular_uniforme(N):
-    print("UNIFORME")
+    print("-------------UNIFORME-------------")
     a = float(input("Ingrese el limite inferior a: "))
     b = float(input("Ingrese el limite superior b: "))
     if a >= b:
         print("Error: el límite inferior debe ser menor que el superior.")
         return
 
-    # -------------Método de la transformación inversa-------------
+    # -------------MÉTODO DE LA TRANSFORMACIÓN INVERSA-------------
     def uniforme_inversa(a, b, r):
         return a + (b - a) * r
 
@@ -20,7 +20,7 @@ def simular_uniforme(N):
         x = uniforme_inversa(a, b, random.random())
         datos_inversa.append(x)
 
-    # -------------Método de rechazo-------------
+    # -------------MÉTODO DE RECHAZO-------------
     f_max = 1 / (b - a)
     datos_rechazo = []
 
@@ -31,7 +31,7 @@ def simular_uniforme(N):
         if y <= f_max:
             datos_rechazo.append(x)
 
-    # Función de densidad
+    # -------------FUNCIÓN DE DENSIDAD-------------
     x_vals = np.linspace(a, b, 500)
     y_vals = [1 / (b - a) if a <= x <= b else 0 for x in x_vals]
 
