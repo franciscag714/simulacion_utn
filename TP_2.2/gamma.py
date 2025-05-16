@@ -5,7 +5,7 @@ import numpy as np
 
 
 def simular_gamma(N):
-    print("GAMMA")
+    print("-------------GAMMA-------------")
     k = float(input("Ingrese k (forma > 0): "))
     a = float(input("Ingrese a (tasa > 0): "))
 

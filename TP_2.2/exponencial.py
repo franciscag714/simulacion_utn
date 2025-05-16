@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 
 def simular_exponencial(N):
-    print("EXPONENCIAL")
+    print("-------------EXPONENCIAL-------------")
     lambd = float(input("Ingrese el valor de lambda: "))
     if lambd <= 0:
         raise ValueError("Lambda debe ser mayor que 0")
