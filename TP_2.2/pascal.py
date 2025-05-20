@@ -53,8 +53,8 @@ def simular_pascal(N):
         datos_rechazo.append(muestra)
 
 
-    plt.hist(datos_directo, bins=range(min(datos_directo), max(datos_directo)+1), alpha=0.5, label="Normal", density=True)
-    plt.hist(datos_rechazo, bins=range(min(datos_rechazo), max(datos_rechazo)+1), alpha=0.5, label="Rechazo", density=True)
+    plt.hist(datos_directo, bins=range(min(datos_directo), max(datos_directo)+1), alpha=0.5, label="Normal", density=True, edgecolor="black")
+    plt.hist(datos_rechazo, bins=range(min(datos_rechazo), max(datos_rechazo)+1), alpha=0.5, label="Rechazo", density=True, edgecolor="black")
     plt.title("Simulación Distribución Pascal")
     plt.xlabel("Número de Fracasos")
     plt.ylabel("Frecuencia Relativa")

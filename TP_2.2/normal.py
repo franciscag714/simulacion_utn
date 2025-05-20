@@ -3,16 +3,11 @@ import matplotlib.pyplot as plt
 import random
 from test import KolmogorovSmirnovTest
 
-
-def simular_normal(n):
-    def densidad_normal(x, media, desvio):
-        return (1 / (desvio * math.sqrt(2 * math.pi))) * math.exp(
-            -0.5 * ((x - media) / desvio) ** 2
-        )
 import numpy as np
 
 
 def simular_normal(n):
+    print("-------------NORMAL-------------")
     media = float(input("Ingrese la media requerida: "))
     desvio = float(input("Ingrese el desvio estandar: "))
     if desvio < 0:
@@ -68,7 +63,7 @@ def simular_normal(n):
     # -------------GRÁFICAS-------------
                 
     fig, ax = plt.subplots(2, 2, figsize=(12, 5))
-    ax[0,0].hist(muestras_rechazo, bins=30, density=True, alpha=0.7, color='skyblue', label='Muestras (rechazo)')
+    ax[0,0].hist(muestras_rechazo, bins=30, density=True, alpha=0.7, color='skyblue',edgecolor="black", label='Muestras (rechazo)')
     x_vals = np.linspace(media - 5 * desvio, media + 5 * desvio, 500)
     y_vals = [(1 / (desvio * np.sqrt(2 * np.pi))) * np.exp(-0.5 * ((x - media) / desvio) ** 2) for x in x_vals]
     ax[0,0].plot(x_vals, y_vals, 'r-', label='Densidad teórica')
@@ -81,7 +76,7 @@ def simular_normal(n):
 
     # Segundo gráfico: Distribución normal simulada directamente
     
-    ax[0,1].hist(muestras_normal, bins=30, density=True, alpha=0.7, color='lightgreen', label='Muestras (normal)')
+    ax[0,1].hist(muestras_normal, bins=30, density=True, alpha=0.7, color='lightgreen',edgecolor = "black", label='Muestras (normal)')
     ax[0,1].plot(x_vals, y_vals, 'r-', label='Densidad teórica')
     ax[0,1].axvline(media, color='black', linestyle='--', label='Media')
     ax[0,1].set_title("Simulación directa (gauss)")
