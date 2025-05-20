@@ -19,7 +19,7 @@ def main():
     simular_uniforme(N)
     simular_exponencial(N)
     simular_gamma(N)
-    # simular_normal(N)
+    simular_normal(N)
     simular_pascal(N)
     simular_binomial(N)
     simular_hipergeometrica(N)
