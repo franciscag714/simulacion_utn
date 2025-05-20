@@ -1,6 +1,7 @@
 import random
 import matplotlib.pyplot as plt
 import numpy as np
+from test import ChiSquaredUniformityTest
 
 
 def simular_uniforme(N):
@@ -35,26 +36,42 @@ def simular_uniforme(N):
     x_vals = np.linspace(a, b, 500)
     y_vals = [1 / (b - a) if a <= x <= b else 0 for x in x_vals]
 
+    # -------------TESTEO-------------
+    print("\n---Test de Chi Cuadrado sobre Método de Transformación Inversa ---")
+    test = ChiSquaredUniformityTest(datos_inversa, a=a, b=b)
+    print(test.run_test())
+
+    print("\n--- Test de Chi² sobre Método de Rechazo ---")
+    test2 = ChiSquaredUniformityTest(datos_rechazo, a=a, b=b)
+    print(test2.run_test())
+
     # -------------GRÁFICAS-------------
-    fig, ax = plt.subplots(1, 2, figsize=(12, 5))
+    fig, ax = plt.subplots(2, 2, figsize=(12, 5))
 
     # Histograma método de la transformación inversa
-    ax[0].hist(datos_inversa, bins=50, density=True, color="skyblue", edgecolor="black")
-    ax[0].plot(x_vals, y_vals, "r--", label="f(x) teórica")
-    ax[0].set_title("Distribución Uniforme - Método de la Inversa")
-    ax[0].set_xlabel("Valor")
-    ax[0].set_ylabel("Densidad")
-    ax[0].legend()
-    ax[0].grid(True)
+    ax[0, 0].hist(
+        datos_inversa, bins=50, density=True, color="skyblue", edgecolor="black"
+    )
+    ax[0, 0].plot(x_vals, y_vals, "r--", label="f(x) teórica")
+    ax[0, 0].set_title("Distribución Uniforme - Método de la Transformación Inversa")
+    ax[0, 0].set_xlabel("Valor")
+    ax[0, 0].set_ylabel("Densidad")
+    ax[0, 0].legend()
+    ax[0, 0].grid(True)
 
     # Histograma método de rechazo
-    ax[1].hist(datos_rechazo, bins=50, density=True, color="skyblue", edgecolor="black")
-    ax[1].plot(x_vals, y_vals, "r--", label="f(x) teórica")
-    ax[1].set_title("Distribución Uniforme - Método de Rechazo")
-    ax[1].set_xlabel("Valor")
-    ax[1].set_ylabel("Densidad")
-    ax[1].legend()
-    ax[1].grid(True)
+    ax[0, 1].hist(
+        datos_rechazo, bins=50, density=True, color="skyblue", edgecolor="black"
+    )
+    ax[0, 1].plot(x_vals, y_vals, "r--", label="f(x) teórica")
+    ax[0, 1].set_title("Distribución Uniforme - Método de Rechazo")
+    ax[0, 1].set_xlabel("Valor")
+    ax[0, 1].set_ylabel("Densidad")
+    ax[0, 1].legend()
+    ax[0, 1].grid(True)
+
+    test.plot(ax[1, 0], "Transformación Inversa")
+    test2.plot(ax[1, 1], "Rechazo")
 
     plt.tight_layout()
     plt.show()

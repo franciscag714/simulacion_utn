@@ -1,6 +1,7 @@
 import random
 import math
 import matplotlib.pyplot as plt
+from test import ChiSquaredDiscreteTest
 
 
 def simular_binomial(N):
@@ -33,13 +34,21 @@ def simular_binomial(N):
         datos.append(binomial_rechazo(n, p))
 
     # -------------GRÁFICA-------------
+    fig, ax = plt.subplots(1, 2, figsize=(12, 5))
+
     x_vals = list(range(0, n + 1))
     y_vals = []
     for x in x_vals:
         y_vals.append(densidad_binomial(x, n, p))
 
+    funcion_densidad = {x: densidad_binomial(x, n, p) for x in x_vals}
+    # -------------TESTEO-------------
+    print("\n---Test de Chi Cuadrado sobre Método de Rechazo ---")
+    test = ChiSquaredDiscreteTest(datos, funcion_densidad)
+    print(test.run_test())
+
     # Histograma método de rechazo
-    plt.hist(
+    ax[0].hist(
         datos,
         bins=range(n + 2),
         align="left",
@@ -47,10 +56,13 @@ def simular_binomial(N):
         edgecolor="black",
         color="skyblue",
     )
-    plt.plot(x_vals, y_vals, "r--", label="Función de densidad teórica")
-    plt.title(f"Distribucion Binomial - n={n}, p={p}")
-    plt.xlabel("Número de éxitos")
-    plt.ylabel("Probabilidad")
-    plt.legend()
-    plt.grid(True)
+    ax[0].plot(x_vals, y_vals, "r--", label="Función de densidad teórica")
+    ax[0].set_title(f"Distribucion Binomial - n={n}, p={p}")
+    ax[0].set_xlabel("Número de éxitos")
+    ax[0].set_ylabel("Probabilidad")
+    ax[0].legend()
+    ax[0].grid(True)
+
+    test.plot(ax[1], "Rechazo")
+
     plt.show()
