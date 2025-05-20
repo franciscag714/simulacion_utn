@@ -4,9 +4,15 @@ from gamma import simular_gamma
 from poisson import simular_poisson
 from binomial import simular_binomial
 from hipergeometrica import simular_hipergeometrica
+<<<<<<< Updated upstream
 from normal import simular_normal
 from empirica_discreta import simular_empirica_discreta
 from pascal import simular_pascal
+=======
+from empirica_discreta import simular_empirica_discreta
+from pascal import simular_pascal
+from normal import simular_normal
+>>>>>>> Stashed changes
 
 
 def main():
@@ -16,6 +22,7 @@ def main():
         print("Error: la cantidad de números debe ser mayor a cero.")
         return
 
+<<<<<<< Updated upstream
     simular_uniforme(N)
     simular_exponencial(N)
     simular_gamma(N)
@@ -25,6 +32,16 @@ def main():
     simular_hipergeometrica(N)
     simular_poisson(N)
     simular_empirica_discreta(N)
+=======
+    #simular_uniforme(N)
+    #simular_exponencial(N)
+    #simular_gamma(N)
+    #simular_binomial(N)
+    #simular_hipergeometrica(N)
+    #simular_empirica_discreta(N)
+    #simular_pascal(N)
+    simular_normal(N)
+>>>>>>> Stashed changes
 
 
 if __name__ == "__main__":  # para que se ejecute main solo

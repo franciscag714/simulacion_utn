@@ -22,8 +22,13 @@ def simular_empirica_discreta(N):
         )
         valores.append(valor)
         probabilidades.append(probabilidad)
+<<<<<<< Updated upstream
 
     if abs(sum(probabilidades) - 1.0) > 1e-6:
+=======
+        
+    if sum(probabilidades) != 1:
+>>>>>>> Stashed changes
         print("ERROR: La suma de probabilidades debe ser 1")
         return
 
@@ -42,7 +47,7 @@ def simular_empirica_discreta(N):
     def muestrear_por_rechazo(valores, probabilidades):
         long = len(valores)
         max_p = max(probabilidades)
-        R = max_p * long  # Cota para el método de rechazo
+        R = max(probabilidades) / (1 / long)
 
         while True:
             # Propuesta uniforme
