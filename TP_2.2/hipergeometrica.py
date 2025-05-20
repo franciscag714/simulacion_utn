@@ -7,6 +7,28 @@ import matplotlib.pyplot as plt
 def combinaciones(n, k):
     return math.factorial(n) / (math.factorial(k) * math.factorial(n - k))
 
+# -------------FUNCIÓN DE MASA-------------
+def hipergeometrica_masa(x, n, K, Np):
+    if x < max(0, n - (Np - K)) or x > min(K, n):
+        return 0
+    return (combinaciones(K, x) * combinaciones(Np - K, n - x)) / combinaciones(
+        Np, n
+    )
+
+# -------------METODO DE RECHAZO-------------
+def hipergeometrica_rechazo(n, K, Np):
+    K_min = max(0, n - (Np - K))
+    K_max = min(K, n)
+    rango = list(range(K_min, K_max + 1))
+    y_vals = [hipergeometrica_masa(x, n, K, Np) for x in rango]
+    p_max = max(y_vals)
+    c = p_max * len(rango)
+    while True:
+        x = random.choice(rango)
+        y = random.uniform(0, c * (1 / len(rango)))
+        if y <= hipergeometrica_masa(x, n, K, Np):
+            return x
+
 
 def simular_hipergeometrica(N):
     print("-------------HIPERGEOMÉTRICA-------------")
@@ -29,27 +51,7 @@ def simular_hipergeometrica(N):
         exitos = sum(1 for i in muestra if i < K)
         datos.append(exitos)
 
-    # -------------FUNCIÓN DE MASA-------------
-    def hipergeometrica_masa(x, n, K, Np):
-        if x < max(0, n - (Np - K)) or x > min(K, n):
-            return 0
-        return (combinaciones(K, x) * combinaciones(Np - K, n - x)) / combinaciones(
-            Np, n
-        )
 
-    # -------------METODO DE RECHAZO-------------
-    def hipergeometrica_rechazo(n, K, Np):
-        K_min = max(0, n - (Np - K))
-        K_max = min(K, n)
-        rango = list(range(K_min, K_max + 1))
-        y_vals = [hipergeometrica_masa(x, n, K, Np) for x in rango]
-        p_max = max(y_vals)
-        c = p_max * len(rango)
-        while True:
-            x = random.choice(rango)
-            y = random.uniform(0, c * (1 / len(rango)))
-            if y <= hipergeometrica_masa(x, n, K, Np):
-                return x
 
     datos_rechazo = [hipergeometrica_rechazo(n, K, poblacion_N) for _ in range(N)]
 

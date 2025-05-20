@@ -3,6 +3,23 @@ import matplotlib.pyplot as plt
 from test import ChiSquaredDiscreteTest
 
 
+# -----------MÉTODO DE RECHAZO-----------
+def muestrear_por_rechazo(valores, probabilidades):
+    long = len(valores)
+    R = max(probabilidades) / (1 / long)
+
+    while True:
+        # Propuesta uniforme
+        i = random.randint(0, long - 1)
+        x = valores[i]
+        g_x = 1 / long
+        f_x = probabilidades[i]
+
+        u = random.random()
+        if u <= f_x / (R * g_x):
+            return x
+
+
 def simular_empirica_discreta(N):
     print("-------------EMPÍRICA DISCRETA-------------")
     cant = int(input("Ingrese la cantidad de valores posibles: "))
@@ -30,22 +47,6 @@ def simular_empirica_discreta(N):
 
     densidad = {val: prob for val, prob in zip(valores, probabilidades)}
 
-    # -----------MÉTODO DE RECHAZO-----------
-    def muestrear_por_rechazo(valores, probabilidades):
-        long = len(valores)
-        R = max(probabilidades) / (1 / long)
-
-        while True:
-            # Propuesta uniforme
-            i = random.randint(0, long - 1)
-            x = valores[i]
-            g_x = 1 / long
-            f_x = probabilidades[i]
-
-            u = random.random()
-            if u <= f_x / (R * g_x):
-                return x
-
     # -----------GENERAR MUESTRAS-----------
 
     muestras_rechazo = [
@@ -53,7 +54,6 @@ def simular_empirica_discreta(N):
     ]
 
     # -------------TESTEO-------------
-
 
     print("\n--- Test Chi Cuadradl sobre Método de Rechazo ---")
     test2 = ChiSquaredDiscreteTest(muestras_rechazo, densidad)

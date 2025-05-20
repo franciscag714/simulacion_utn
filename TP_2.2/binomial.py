@@ -3,6 +3,19 @@ import math
 import matplotlib.pyplot as plt
 from test import ChiSquaredDiscreteTest
 
+# -------------MÉTODO DE RECHAZO (libro)-------------
+def binomial_rechazo(n, p):
+    x = 0.0
+    for _ in range(n):
+        r = random.random()
+        if r < p:
+            x = x + 1
+    return x
+# -------------FUNCIÓN DE DENSIDAD-------------
+def densidad_binomial(x, n, p):
+    comb = math.comb(n, x)
+    return comb * (p**x) * ((1 - p) ** (n - x))
+
 
 def simular_binomial(N):
     print("-------------BINOMIAL-------------")
@@ -15,20 +28,6 @@ def simular_binomial(N):
         print("Error: la cantidad de ensayos debe ser mayor que cero.")
         return
     datos = []
-
-    # -------------MÉTODO DE RECHAZO (libro)-------------
-    def binomial_rechazo(n, p):
-        x = 0.0
-        for _ in range(n):
-            r = random.random()
-            if r < p:
-                x = x + 1
-        return x
-
-    # -------------FUNCIÓN DE DENSIDAD-------------
-    def densidad_binomial(x, n, p):
-        comb = math.comb(n, x)
-        return comb * (p**x) * ((1 - p) ** (n - x))
 
     for _ in range(N):
         datos.append(binomial_rechazo(n, p))

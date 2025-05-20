@@ -1,8 +1,28 @@
 import random
-import math
 import numpy as np
 import matplotlib.pyplot as plt
 from test import KolmogorovSmirnovTest
+
+
+# -------------MÉTODO DE LA TRANSFORMACIÓN INVERSA-------------
+def exponencial_inversa(lambd, r):
+    return -(1 / lambd) * np.log(r)
+
+# -------------MÉTODO DE VON NEUMANN (rechazo)-------------
+def exponencial_von_neumann(lambd, N):
+    datos_von_neumann = []
+    while len(datos_von_neumann) < N:
+        u1 = np.random.uniform(0, 1)
+        u2 = np.random.uniform(0, 1)
+        if u2 <= np.exp(-u1):
+            x = u1 / lambd
+            datos_von_neumann.append(x)
+    return datos_von_neumann
+
+
+# -------------FUNCIÓN DE DENSIDAD-------------
+def densidad_exponencial(x, lambd):
+    return lambd * np.exp(-lambd * x)
 
 
 def simular_exponencial(N):
@@ -11,31 +31,13 @@ def simular_exponencial(N):
     if lambd <= 0:
         raise ValueError("Lambda debe ser mayor que 0")
 
-    # -------------MÉTODO DE LA TRANSFORMACIÓN INVERSA-------------
-    def exponencial_inversa(lambd, r):
-        return -(1 / lambd) * np.log(r)
-
     datos_inversa = []
     for i in range(N):
         x = exponencial_inversa(lambd, random.random())
         datos_inversa.append(x)
 
-    # -------------MÉTODO DE VON NEUMANN (rechazo)-------------
-    def exponencial_von_neumann(lambd, N):
-        datos_von_neumann = []
-        while len(datos_von_neumann) < N:
-            u1 = np.random.uniform(0, 1)
-            u2 = np.random.uniform(0, 1)
-            if u2 <= np.exp(-u1):
-                x = u1 / lambd
-                datos_von_neumann.append(x)
-        return datos_von_neumann
-
     datos_rechazo = exponencial_von_neumann(lambd, N)
 
-    # -------------FUNCIÓN DE DENSIDAD-------------
-    def densidad_exponencial(x, lambd):
-        return lambd * np.exp(-lambd * x)
 
     # -------------TESTEO-------------
     print(

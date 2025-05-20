@@ -3,6 +3,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 from test import ChiSquaredUniformityTest
 
+# -------------MÉTODO DE LA TRANSFORMACIÓN INVERSA-------------
+def uniforme_inversa(a, b, r):
+    return a + (b - a) * r
+
 
 def simular_uniforme(N):
     print("-------------UNIFORME-------------")
@@ -11,10 +15,6 @@ def simular_uniforme(N):
     if a >= b:
         print("Error: el límite inferior debe ser menor que el superior.")
         return
-
-    # -------------MÉTODO DE LA TRANSFORMACIÓN INVERSA-------------
-    def uniforme_inversa(a, b, r):
-        return a + (b - a) * r
 
     datos_inversa = []
     for i in range(N):
