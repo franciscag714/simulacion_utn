@@ -16,14 +16,14 @@ def main():
         print("Error: la cantidad de números debe ser mayor a cero.")
         return
 
-    #simular_uniforme(N)
-    #simular_exponencial(N)
-    #simular_gamma(N)
+    simular_uniforme(N)
+    simular_exponencial(N)
+    simular_gamma(N)
     simular_normal(N)
     simular_pascal(N)
-    #simular_binomial(N)
-    #simular_hipergeometrica(N)
-    #simular_poisson(N)
+    simular_binomial(N)
+    simular_hipergeometrica(N)
+    simular_poisson(N)
     simular_empirica_discreta(N)
 
 
