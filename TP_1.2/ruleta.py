@@ -145,6 +145,7 @@ def graficar_todas_corridas(todas_freq, todas_flujos, frecuencia_esperada):
 
     # ===== GRÁFICO DE FLUJO DE CAJA =====
     for idx, flujo in enumerate(todas_flujos):
+        print(f"Corrida {idx+1}: min = {min(flujo):.2e}, max = {max(flujo):.2e}")
         ax.plot(range(len(flujo)), flujo, alpha=0.5, label=f'Corrida {idx+1}')
     ax.hlines(10000, 0, max(len(f) for f in todas_flujos),
               colors="blue", linestyles='dashed', label="Capital inicial")
@@ -222,20 +223,20 @@ def martingala(apuesta_inicial, num_elegido, num, cap, elec):
 def dalembert(apuesta_inicial, mundo, mundo_a_comparar, cap, elec):
     if mundo != mundo_a_comparar:
         cap = cap - apuesta_inicial
-        apuesta = apuesta_inicial + 1
+        apuesta = apuesta_inicial * 2
     else:
         if elec == 1:
             cap = cap + apuesta_inicial * 36
-            apuesta = max(1, apuesta_inicial - 1)
+            apuesta = max(1, apuesta_inicial/2)
         elif elec == 2:
             cap = cap + apuesta_inicial * 2
-            apuesta = max(1, apuesta_inicial - 1)
+            apuesta = max(1, apuesta_inicial/2)
         elif elec == 3:
             cap = cap + apuesta_inicial * 2
-            apuesta = max(1, apuesta_inicial - 1)
+            apuesta = max(1, apuesta_inicial/2)
         elif elec == 4 or elec == 5:
             cap = cap + apuesta_inicial * 3
-            apuesta = max(1, apuesta_inicial - 1)
+            apuesta = max(1, apuesta_inicial/2)
     return apuesta, cap
 
 
@@ -245,6 +246,7 @@ def fibonacci(apuesta_inicial, mundo, mundo_a_comparar, cap, secuencia, indice, 
         indice += 1
         if indice >= len(secuencia):
             secuencia.append(secuencia[-1] + secuencia[-2])
+        apuesta = secuencia[indice-2] + secuencia[indice-1]
     else:
         if elec == 1:
             cap = cap + apuesta_inicial * 36
@@ -258,7 +260,7 @@ def fibonacci(apuesta_inicial, mundo, mundo_a_comparar, cap, secuencia, indice, 
         elif elec == 4 or elec == 5:
             cap = cap + apuesta_inicial * 3
             indice = max(0, indice - 2)
-    apuesta = secuencia[indice]
+        apuesta = secuencia[indice-2]
     return apuesta, cap, secuencia, indice
 
 
@@ -291,11 +293,12 @@ parser.add_argument(
 parser.add_argument(
     "-n", type=int, required=True, help="Cantidad de corridas (entero positivo)"
 )
-opciones.add_argument("-e", type=int, help="Número elegido (entre 0 y 36)")
 parser.add_argument(
     "-s", type=str, required=True, help="Estrategia elegida (m, f, d, o)"
 )
 parser.add_argument("-a", type=str, required=True, help="Cantidad de capital (i, f)")
+
+opciones.add_argument("-e", type=int, help="Número elegido (entre 0 y 36)")
 opciones.add_argument("-b", type=str, help="Color rojo o negro")
 opciones.add_argument("-p", type=str, help="par o impar")
 opciones.add_argument(
@@ -407,7 +410,7 @@ def simular():
         perdidas_por_corrida = 0
         capital_inicial = 10000
         apuesta_inicial = 100
-        secuencia = [1, 1, 2, 3, 5, 8, 13, 21]
+        secuencia = [100,100,200, 300, 500, 800, 1300, 2100, 3400, 5500]
         indice = 0
 
         for j in range(num_tiradas):
@@ -475,7 +478,8 @@ def simular():
 
         print("Cantidad de aciertos: ", aciertos_por_corrida)
         print("Cantidad de perdidas: ", perdidas_por_corrida)
-
+        print("Flujo capital: ", flujo_de_caja)
+        print("Flujo de todas las corridas: ", todas_flujos)
         
         graficar_corrida(
         freq_relativa_por_corrida,
