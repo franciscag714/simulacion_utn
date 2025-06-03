@@ -201,8 +201,8 @@ def paridad_num(num):
 
 
 def martingala(apuesta_inicial, num_elegido, num, cap, elec):
+    cap = cap - apuesta_inicial
     if num != num_elegido:
-        cap = cap - apuesta_inicial
         apuesta = apuesta_inicial * 2
     else:
         if elec == 1:
@@ -221,8 +221,8 @@ def martingala(apuesta_inicial, num_elegido, num, cap, elec):
 
 
 def dalembert(apuesta_inicial, mundo, mundo_a_comparar, cap, elec):
+    cap = cap - apuesta_inicial
     if mundo != mundo_a_comparar:
-        cap = cap - apuesta_inicial
         apuesta = apuesta_inicial * 2
     else:
         if elec == 1:
@@ -266,8 +266,8 @@ def fibonacci(apuesta_inicial, mundo, mundo_a_comparar, cap, secuencia, indice, 
 
 
 def paroli(apuesta_inicial, num_elegido, num, cap, elec):
+    cap = cap - apuesta_inicial
     if num != num_elegido:
-        cap = cap - apuesta_inicial
         apuesta = apuesta_inicial
     else:
         if elec == 1:
