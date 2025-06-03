@@ -207,16 +207,13 @@ def martingala(apuesta_inicial, num_elegido, num, cap, elec):
     else:
         if elec == 1:
             cap = cap + apuesta_inicial * 36
-            apuesta = 100
         elif elec == 2:
             cap = cap + apuesta_inicial * 2
-            apuesta = 100
         elif elec == 3:
             cap = cap + apuesta_inicial * 2
-            apuesta = 100
         elif elec == 4 or elec == 5:
             cap = cap + apuesta_inicial * 3
-            apuesta = 100
+        apuesta = 100
     return apuesta, cap
 
 
@@ -227,16 +224,13 @@ def dalembert(apuesta_inicial, mundo, mundo_a_comparar, cap, elec):
     else:
         if elec == 1:
             cap = cap + apuesta_inicial * 36
-            apuesta = max(1, apuesta_inicial/2)
         elif elec == 2:
             cap = cap + apuesta_inicial * 2
-            apuesta = max(1, apuesta_inicial/2)
         elif elec == 3:
             cap = cap + apuesta_inicial * 2
-            apuesta = max(1, apuesta_inicial/2)
         elif elec == 4 or elec == 5:
             cap = cap + apuesta_inicial * 3
-            apuesta = max(1, apuesta_inicial/2)
+        apuesta = max(1, apuesta_inicial/2)
     return apuesta, cap
 
 
@@ -249,40 +243,39 @@ def fibonacci(apuesta_inicial, mundo, mundo_a_comparar, cap, secuencia, indice, 
     else:
         if elec == 1:
             cap = cap + apuesta_inicial * 36
-            indice = max(0, indice - 2)
         elif elec == 2:
             cap = cap + apuesta_inicial * 2
-            indice = max(0, indice - 2)
         elif elec == 3:
             cap = cap + apuesta_inicial * 2
-            indice = max(0, indice - 2)
         elif elec == 4 or elec == 5:
             cap = cap + apuesta_inicial * 3
-            indice = max(0, indice - 2)
+
         indice = max(0, indice - 2)
         
     apuesta_proxima = secuencia[indice]
     return apuesta_proxima, cap, secuencia, indice
 
 
-def paroli(apuesta_inicial, num_elegido, num, cap, elec):
+def paroli(apuesta_inicial, mundo, mundo_a_comparar, cap, elec, cant_aciertos_paroli):
     cap = cap - apuesta_inicial
-    if num != num_elegido:
-        apuesta = apuesta_inicial
+    if mundo != mundo_a_comparar:
+        apuesta = 100
+        cant_aciertos_paroli = 0
     else:
         if elec == 1:
             cap = cap + apuesta_inicial * 36
-            apuesta = apuesta_inicial * 2
         elif elec == 2:
             cap = cap + apuesta_inicial * 2
-            apuesta = apuesta_inicial * 2
         elif elec == 3:
             cap = cap + apuesta_inicial * 2
-            apuesta = apuesta_inicial * 2
         elif elec == 4 or elec == 5:
             cap = cap + apuesta_inicial * 3
+
+        if cant_aciertos_paroli < 3:    
             apuesta = apuesta_inicial * 2
-    return apuesta, cap
+        cant_aciertos_paroli += 1
+
+    return apuesta, cap, cant_aciertos_paroli
 
 
 # ----------------------------------- Definicion de argumentos -----------------------------------
@@ -413,6 +406,7 @@ def simular():
         apuesta_inicial = 100
         secuencia = [100,100,200, 300, 500, 800, 1300, 2100, 3400, 5500]
         indice = 0
+        cant_aciertos_paroli = 0
 
         for j in range(num_tiradas):
             valor = random.randint(0, 36)
@@ -453,11 +447,12 @@ def simular():
                     apuesta_inicial, mundo, mundo_a_comparar, capital_inicial, eleccion
                 )
             elif est_elegida == "o":
-                ap, capital = paroli(
-                    apuesta_inicial, mundo, mundo_a_comparar, capital_inicial, eleccion
+                ap, capital, cant_aciertos_par_return = paroli(
+                    apuesta_inicial, mundo, mundo_a_comparar, capital_inicial, eleccion, cant_aciertos_paroli
                 )
-
-            flujo_de_caja.append(capital)
+                cant_aciertos_paroli = cant_aciertos_par_return
+                if cant_aciertos_paroli == 3:
+                    ap = 100
 
             if mundo_a_comparar == mundo:
 
@@ -468,6 +463,8 @@ def simular():
 
             apuesta_inicial = ap
             capital_inicial = capital
+
+            flujo_de_caja.append(capital)
 
             if cap_elegido == "f":
                 if capital_inicial <= 0 or capital_inicial < apuesta_inicial:
