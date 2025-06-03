@@ -39,19 +39,19 @@ def graficar_corrida(freq_relativa_por_corrida, promedio_por_corrida, varianza_p
     axs[0,1].hlines(promedio_esperado, 1, num_tiradas, colors='r')
     axs[0,1].set_xlabel('Número de tirada')
     axs[0,1].set_ylabel('Promedio')
-    axs[0, 1].legend(['Progreso de la media' + str(num_elegido), 'Promedio esperado'])
+    axs[0, 1].legend(['Progreso de la media' , 'Promedio esperado'])
 
     axs[1,0].plot(x_vals[1:], varianza_por_corrida) 
     axs[1,0].hlines(varianza_esperada, 2, num_tiradas, colors='r')
     axs[1,0].set_xlabel('Número de tirada')
     axs[1,0].set_ylabel('Varianza')
-    axs[1, 0].legend(['Progreso de la varianza' + str(num_elegido), 'Varianza esperada'])
+    axs[1, 0].legend(['Progreso de la varianza', 'Varianza esperada'])
 
     axs[1,1].plot(x_vals[1:], desvio_por_corrida)  
     axs[1,1].hlines(desvio_esperado, 2, num_tiradas, colors='r')
     axs[1,1].set_xlabel('Número de tirada')
     axs[1,1].set_ylabel('Desvío')
-    axs[1, 1].legend(['Progreso del desvio' + str(num_elegido), 'Desvio esperado'])
+    axs[1, 1].legend(['Progreso del desvio', 'Desvio esperado'])
 
     plt.tight_layout()
     plt.show()

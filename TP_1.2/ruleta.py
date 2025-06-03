@@ -241,12 +241,11 @@ def dalembert(apuesta_inicial, mundo, mundo_a_comparar, cap, elec):
 
 
 def fibonacci(apuesta_inicial, mundo, mundo_a_comparar, cap, secuencia, indice, elec):
+    cap = cap - apuesta_inicial
     if mundo != mundo_a_comparar:
-        cap = cap - apuesta_inicial
         indice += 1
         if indice >= len(secuencia):
             secuencia.append(secuencia[-1] + secuencia[-2])
-        apuesta = secuencia[indice-2] + secuencia[indice-1]
     else:
         if elec == 1:
             cap = cap + apuesta_inicial * 36
@@ -260,8 +259,10 @@ def fibonacci(apuesta_inicial, mundo, mundo_a_comparar, cap, secuencia, indice, 
         elif elec == 4 or elec == 5:
             cap = cap + apuesta_inicial * 3
             indice = max(0, indice - 2)
-        apuesta = secuencia[indice-2]
-    return apuesta, cap, secuencia, indice
+        indice = max(0, indice - 2)
+        
+    apuesta_proxima = secuencia[indice]
+    return apuesta_proxima, cap, secuencia, indice
 
 
 def paroli(apuesta_inicial, num_elegido, num, cap, elec):
