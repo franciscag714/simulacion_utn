@@ -273,7 +273,10 @@ def paroli(apuesta_inicial, mundo, mundo_a_comparar, cap, elec, cant_aciertos_pa
 
         if cant_aciertos_paroli < 3:    
             apuesta = apuesta_inicial * 2
-        cant_aciertos_paroli += 1
+            cant_aciertos_paroli += 1
+        else: 
+            apuesta = 100
+            cant_aciertos_paroli = 0
 
     return apuesta, cap, cant_aciertos_paroli
 
@@ -447,12 +450,9 @@ def simular():
                     apuesta_inicial, mundo, mundo_a_comparar, capital_inicial, eleccion
                 )
             elif est_elegida == "o":
-                ap, capital, cant_aciertos_par_return = paroli(
+                ap, capital, cant_aciertos_paroli = paroli(
                     apuesta_inicial, mundo, mundo_a_comparar, capital_inicial, eleccion, cant_aciertos_paroli
                 )
-                cant_aciertos_paroli = cant_aciertos_par_return
-                if cant_aciertos_paroli == 3:
-                    ap = 100
 
             if mundo_a_comparar == mundo:
 
