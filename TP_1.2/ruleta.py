@@ -220,7 +220,7 @@ def martingala(apuesta_inicial, num_elegido, num, cap, elec):
 def dalembert(apuesta_inicial, mundo, mundo_a_comparar, cap, elec):
     cap = cap - apuesta_inicial
     if mundo != mundo_a_comparar:
-        apuesta = apuesta_inicial * 2
+        apuesta = apuesta_inicial + 100
     else:
         if elec == 1:
             cap = cap + apuesta_inicial * 36
@@ -230,7 +230,7 @@ def dalembert(apuesta_inicial, mundo, mundo_a_comparar, cap, elec):
             cap = cap + apuesta_inicial * 2
         elif elec == 4 or elec == 5:
             cap = cap + apuesta_inicial * 3
-        apuesta = max(1, apuesta_inicial/2)
+        apuesta = max(100, apuesta_inicial - 100)
     return apuesta, cap
 
 
