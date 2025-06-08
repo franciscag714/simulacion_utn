@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 # Parámetros del sistema
 Q = 50          # Valor maximo de inventario
 R = 20          # Punto de reorden
-lead_time = 15   # Días de espera entre orden y entrega
 
 # Costos
 costo_orden = 100
