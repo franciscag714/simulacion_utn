@@ -2,151 +2,7 @@ import argparse
 import sys 
 import random 
 import math 
-## Ver diagrama de flujo de mecanismo del proximo evento
-
-## ------------------------------- Medidas de desempeño -----------------------------------------------
-# demora promedio: promedio_demora = sum(d(n))/n
-# numero promedio de clientes en cola: promedio_clientes_en_cola = integral() de 0 a T(n) de Q(t)dt / T(n)
-# B(t) = 1 , si el servidor esta ocupado en el tiempo t
-# B(t) = 0, si el servidor esta desocupado en el tiempo t
-# medida de cuan ocupado está el servidor: u(n): ocupacion_servidor = integral de 0 a T(n) de B(t)dt / T(n)
-
-"""
-----Metricas a obtener por simulacion----
-
-
-Promedio de clientes en el sistema (𝐿)
-
-Promedio de clientes en la cola (𝐿𝑞)
-
-Tiempo promedio en el sistema (𝑊)
-
-Tiempo promedio en la cola (𝑊𝑞)
-
-Utilización del servidor (𝜌=𝜆/𝜇)
-
-Probabilidad de encontrar n clientes en cola
-
-Probabilidad de denegacion de servicio con colas finitas (tamaño máximo: 0, 2, 5, 10, 50)
-
-------- Parametros a variar --------
-Tasa de servicio (𝜇): fija (por ejemplo: 1 cliente por minuto)
-
-Tasa de arribo (𝜆): multiplos de la tasa de servicio:
-
-25% (0.25𝜇)
-
-50% (0.50𝜇)
-
-75% (0.75𝜇)
-
-100% (1.00𝜇)
-
-125% (1.25𝜇) ← sistema se satura
-
------------------------------ modelo MM1) --------------------------------
-Generar llegadas con distribucion exponencial (parametro 𝜆)
-
-Generar servicios con distribucion exponencial (parametro 𝜇)
-
-Simular la cola FIFO (primero en llegar, primero en ser atendido)
-
-Medir:
-
-Cuántos clientes hay en el sistema en cada instante
-
-Cuánto tiempo esperan
-
-Si fueron rechazados (si la cola tiene tamaño máximo)
-
-Cuánto tiempo estuvo el servidor ocupado
-
------------------------------------ PROBABILIDADES -----------------------------------------------------------
-Probabilidad de encontrar n clientes en cola: contar cuántas veces hay exactamente n clientes esperando
-
-Probabilidad de denegación de servicio: proporción de clientes que no entraron por cola llena
-
------------------------------ PARAMETROS DE ENTRADA ----------------------------------
-
-lambda --> Tasa de arribo de clientes al sistema (clientes/tiempo) | siempre es menor que mu
-
-mu --> Tasa de servicio del servidor (clientes/tiempo) | siempre es mayor que lambda, si no se cumpliese seria un sistema inestable debido a que llegan mas de lo que se atiende lambda
-
-N --> Cantidad de usuarios a simular 
-
-C --> Corridas del sistema (cantidad de veces que se simula el sistema con los mismos parametros)
-
-
-"""
-
-class mm1_simulador:
-    def __init__(self, num_corridas, num_usuarios, tasa_servicio, tasa_arribo_clientes):
-        self.num_corridas = num_corridas
-        self.num_usuarios = num_usuarios
-        self.tasa_servicio = tasa_servicio
-        self.tasa_arribo_clientes = tasa_arribo_clientes
-        # PROCESOS FUTUROS
-        self.reloj = 0.0  # Tiempo actual del reloj
-        self.proximo_arribo = 0 
-        self.proxima_salida = 10**30
-        # ESTADO DEL SISTEMA
-        self.estado_servidor = 0 # B(t)
-        self.numero_clientes_en_cola = 0 #Q(t)
-        self.tiempos_arribos_en_cola = []
-        self.tiempo_ultimo_evento = 0
-        # CONTADORES DE ESTADISTICAS
-        self.contador_clientes_atendidos = 0
-        self.demora_total = 0.0
-        self.area_bajo_qt = 0.0 # (q(t) = Numero de clientes en cola en el tiempo t)
-        self.area_bajo_bt = 0.0 # (b(t) = 1 si el servidor esta ocupado, 0 si no lo esta)
-        
-
-    def run(self):
-        pass
-
-
-# ---------------------------------- Declaracion de variables globales -----------------------------------
-
-tiempos_arribos_clientes = []  # Lista para almacenar los tiempos de arribo de los clientes
-tiempos_retiros_clientes = []  # Lista para almacenar los tiempos de retiro de los clientes
-
-
-# ---------------------------------- Definición de funciones auxiliares -----------------------------------
-
-def generador_numero_aleatorio():
-    """Genera un número aleatorio entre 0 y 1."""
-    return round(random.uniform(0, 1), 4)
-
-def calcular_demora(tiempos_arribos_clientes, tiempos_retiros_clientes):
-    """demora = tiempo de todos los clientes que estan esperando en la cola. + la diferencia entre el cliente que esta en servicio con el tiempo de mi llegada"""
-    demora =  max(tiempos_retiros_clientes) - max(tiempos_arribos_clientes) 
-    return demora if demora > 0 else 0
-
-def calcular_tiempo_arribo_salida(tasa_arribo, tasa_servicio, cantidad_usuarios):
-    for i in range(0, cantidad_usuarios):
-        if i == 0:
-            # Arribo del primer cliente
-            numero_aleatorio_arribo = generador_numero_aleatorio()
-            nro_arribo_cliente = round(((-1/tasa_arribo)*math.log(numero_aleatorio_arribo)), 4)
-            tiempos_arribos_clientes.append(nro_arribo_cliente)
-            # Retiro del primer cliente
-            numero_aleatorio_retiro = generador_numero_aleatorio()
-            tiempo_retiro_cliente = round(((-1/tasa_servicio)*math.log(numero_aleatorio_retiro) + tiempos_arribos_clientes[i]), 4)
-            tiempos_retiros_clientes.append(tiempo_retiro_cliente)
-        else:
-            numero_aleatorio_arribo = generador_numero_aleatorio()
-            tiempo_ultimo_arribo = round(((-1/tasa_arribo)*math.log(numero_aleatorio_arribo)) + tiempos_arribos_clientes[i-1], 4)
-            tiempos_arribos_clientes.append(tiempo_ultimo_arribo)
-            # Retiro de los proximos clientes
-            numero_aleatorio_retiro = generador_numero_aleatorio()
-            demora = calcular_demora(tiempos_arribos_clientes, tiempos_retiros_clientes)
-            tiempo_total_cliente = round(((-1/tasa_servicio)*math.log(numero_aleatorio_retiro) + tiempos_arribos_clientes[i] + demora), 4)
-            tiempos_retiros_clientes.append(tiempo_total_cliente)
-    
-    print("Tiempos de arribo de clientes:", tiempos_arribos_clientes)
-    print("Tiempos de retiro de clientes:", tiempos_retiros_clientes)
-
-
+import matplotlib.pyplot as plt
 
 #----------------------------------- Definicion de argumentos -----------------------------------
 
@@ -188,13 +44,102 @@ num_usuarios = args.n
 tasa_servicio = args.mu
 tasa_arribo = args.l
 
-# Rutina de inicializacion 
 
+probabilidades_n_clientes_en_cola_por_tasa_de_arribo = []
+probabilidades_denegacion_servicio_por_tasa_de_arribo = [] 
+
+def calcular_valores_estadisticos(tasa_servicio, tasa_arribo):
+    utilizacion_servidor = tasa_arribo / tasa_servicio
+    numero_promedio_en_el_sistema = utilizacion_servidor / (1 - utilizacion_servidor)
+    numero_promedio_clientes_en_cola = (utilizacion_servidor ** 2) / (1 - utilizacion_servidor)
+    tiempo_promedio_en_el_sistema = 1 / (tasa_servicio - tasa_arribo)
+    tiempo_promedio_en_cola = tasa_arribo / (tasa_servicio * (tasa_servicio - tasa_arribo))
+
+    print(f"Utilización del servidor (ρ): {utilizacion_servidor:.4f}")
+    print(f"Número promedio de clientes en el sistema (L): {numero_promedio_en_el_sistema:.4f}")
+    print(f"Número promedio de clientes en la cola (Lq): {numero_promedio_clientes_en_cola:.4f}")
+    print(f"Tiempo promedio en el sistema (W): {tiempo_promedio_en_el_sistema:.4f}")
+    print(f"Tiempo promedio en la cola (Wq): {tiempo_promedio_en_cola:.4f}")
+
+    return utilizacion_servidor
+
+
+def calcular_probabilidades_n_clientes_en_cola(utilizacion_servidor):
+    probabilidad_n_clientes_en_cola_por_corrida = []
+    for n in range(0, 20):  
+        if n == 0:
+            probabilidad_n_clientes = 1 - utilizacion_servidor
+        else:
+            probabilidad_n_clientes = (utilizacion_servidor ** (n+1)) * ((1 - utilizacion_servidor))
+        probabilidad_n_clientes_en_cola_por_corrida.append(probabilidad_n_clientes)
+    
+    return probabilidad_n_clientes_en_cola_por_corrida
+
+def calcular_probabilidad_denegacion_servicio(utilizacion_servidor):
+    ks = [0, 2, 5, 10, 50]
+    probabilidades_denegacion_servicio_por_corrida = [] 
+    if utilizacion_servidor < 1:
+        for k in ks: 
+            probabilidad_denegacion = ((utilizacion_servidor ** k) * (1 - utilizacion_servidor)) / (1 - (utilizacion_servidor ** (k + 1)))
+            probabilidades_denegacion_servicio_por_corrida.append(probabilidad_denegacion)
+    else:
+        for k in ks:
+            probabilidad_denegacion = 1 / (k + 1)
+            probabilidades_denegacion_servicio_por_corrida.append(probabilidad_denegacion)
+    return probabilidades_denegacion_servicio_por_corrida
+
+
+def graficar(probabilidades_n_clientes_en_cola_por_tasa_de_arribo, probabilidades_denegacion_servicio_por_tasa_de_arribo, tasas_arribo_real, tasa_servicio):
+    # Graficar probabilidades de n clientes en cola
+    plt.figure(figsize=(12, 6))
+    for i, prob_n_clientes in enumerate(probabilidades_n_clientes_en_cola_por_tasa_de_arribo):
+        plt.plot(range(len(prob_n_clientes[0])), prob_n_clientes[0], label=f'Tasa de arribo: {tasas_arribo_real[i]:.2f} clientes/tiempo')
+    
+    plt.title('Probabilidad de n clientes en cola')
+    plt.xlabel('Número de clientes en cola (n)')
+    plt.ylabel('Probabilidad P(n)')
+    plt.legend()
+    plt.grid()
+    plt.show()
+
+    # Graficar probabilidades de denegación de servicio
+    plt.figure(figsize=(12, 6))
+    for i, prob_denegacion in enumerate(probabilidades_denegacion_servicio_por_tasa_de_arribo):
+        plt.plot([0, 2, 5, 10, 50], prob_denegacion[0], label=f'Tasa de arribo: {tasas_arribo_real[i]:.2f} clientes/tiempo')
+    
+    plt.title('Probabilidad de denegación de servicio')
+    plt.xlabel('Número máximo de clientes en el sistema (k)')
+    plt.ylabel('Probabilidad P(Denegación)')
+    plt.legend()
+    plt.grid()
+    plt.show()
 
 def simular():
 
-    # Calcular tiempos de arribo y retiro de clientes
-    calcular_tiempo_arribo_salida(tasa_arribo, tasa_servicio, num_usuarios)
+    porcentaje_tasas_de_arribo = [0.25, 0.50, 0.75, 0.99, 1.25] 
+    tasas_arribo_real = []
+    for i in porcentaje_tasas_de_arribo:
+        tasa_arribo = i * tasa_servicio
+        tasas_arribo_real.append(tasa_arribo)
+        prob_n_clientes = []
+        prob_denegacion = []
+        for j in range(num_corridas):
+            
+            utilizacion_servidor = calcular_valores_estadisticos(tasa_servicio, tasa_arribo)
+
+            prob_n_clientes.append(calcular_probabilidades_n_clientes_en_cola(utilizacion_servidor))
+
+            prob_denegacion.append(calcular_probabilidad_denegacion_servicio(utilizacion_servidor))
+    
+        probabilidades_n_clientes_en_cola_por_tasa_de_arribo.append(prob_n_clientes)
+        probabilidades_denegacion_servicio_por_tasa_de_arribo.append(prob_denegacion)
 
 
+        # Llamás a graficar UNA VEZ al final, con todas las tasas
+        graficar(probabilidades_n_clientes_en_cola_por_tasa_de_arribo,
+                    probabilidades_denegacion_servicio_por_tasa_de_arribo,
+                    tasas_arribo_real,
+                    tasa_servicio)
+                
 simular()
+
