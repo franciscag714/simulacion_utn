@@ -4,32 +4,6 @@ import random
 import math 
 import matplotlib.pyplot as plt
 
-class mm1_simulador:
-    def __init__(self, num_corridas, num_usuarios, tasa_servicio, tasa_arribo_clientes):
-        self.num_corridas = num_corridas
-        self.num_usuarios = num_usuarios
-        self.tasa_servicio = tasa_servicio
-        self.tasa_arribo_clientes = tasa_arribo_clientes
-        # PROCESOS FUTUROS
-        self.reloj = 0.0  # Tiempo actual del reloj
-        self.proximo_arribo = 0 
-        self.proxima_salida = 10**30
-        # ESTADO DEL SISTEMA
-        self.estado_servidor = 0 # B(t)
-        self.numero_clientes_en_cola = 0 #Q(t)
-        self.tiempos_arribos_en_cola = []
-        self.tiempo_ultimo_evento = 0
-        # CONTADORES DE ESTADISTICAS
-        self.contador_clientes_atendidos = 0
-        self.demora_total = 0.0
-        self.area_bajo_qt = 0.0 # (q(t) = Numero de clientes en cola en el tiempo t)
-        self.area_bajo_bt = 0.0 # (b(t) = 1 si el servidor esta ocupado, 0 si no lo esta)
-        
-
-    def run(self):
-        pass
-
-
 # ---------------------------------- Declaracion de variables globales -----------------------------------
 
 # Lista para almacenar los tiempos de retiro de los clientes
@@ -264,15 +238,8 @@ def calcular_valores_estadisticos_teoricos(tasa_servicio, tasa_arribo, cant_clie
     probabilidad_n_clientes_en_cola = calcular_probabilidades_n_clientes_en_cola_teorica(utilizacion_servidor, cant_clientes)
     probabilidades_denegacion_servicio = calcular_probabilidad_denegacion_servicio_teorica(utilizacion_servidor)
 
-    print(f"Utilización del servidor (ρ): {utilizacion_servidor:.4f}")
-    print(f"Número promedio de clientes en el sistema (L): {numero_promedio_de_clientes_en_el_sistema:.4f}")
-    print(f"Número promedio de clientes en la cola (Lq): {numero_promedio_clientes_en_cola:.4f}")
-    print(f"Tiempo promedio en el sistema (W): {tiempo_promedio_en_el_sistema:.4f}")
-    print(f"Tiempo promedio en la cola (Wq): {tiempo_promedio_en_cola:.4f}")
-    print("\nProbabilidades de encontrar n clientes en cola:")
-    print("Probabilidad de n clientes en cola: ", probabilidad_n_clientes_en_cola)
-    print(f"Probabilidad de denegación de servicio para k = 0, 2, 5, 10, 50: ", probabilidades_denegacion_servicio)
-    
+    return utilizacion_servidor, numero_promedio_de_clientes_en_el_sistema, numero_promedio_clientes_en_cola, tiempo_promedio_en_el_sistema, tiempo_promedio_en_cola, probabilidad_n_clientes_en_cola, probabilidades_denegacion_servicio
+
 def calculos_estadisticos_generales(tasa_servicio, tasa_arribo):
     utilizacion_servidor = tasa_arribo / tasa_servicio
     numero_promedio_de_clientes_en_el_sistema = utilizacion_servidor / (1 - utilizacion_servidor)
@@ -306,86 +273,72 @@ def calcular_probabilidad_denegacion_servicio_teorica(utilizacion_servidor):
             probabilidades_denegacion_servicio_por_corrida.append(probabilidad_denegacion)
     return probabilidades_denegacion_servicio_por_corrida
 
-
-"""
-def graficar_metricas(
-    promedio_de_los_clientes_en_el_sistema_por_corrida_y_tasa,
-    promedio_de_los_clientes_en_la_cola_por_corrida_y_tasa,
-    tiempo_promedio_en_el_sistema_por_corrida_y_tasa,
-    tiempo_promedio_en_la_cola_por_corrida_y_tasa,
-    promedio_de_utilizacion_del_servidor_por_corrida_y_tasa, probabilidad_de_encontrar_n_clientes_en_cola_por_corrida_y_tasa
+def resumen_simulacion(
+    tasas_arribo,
+    promedio_de_los_clientes_en_el_sistema_por_tasa,
+    promedio_de_los_clientes_en_cola_por_tasa,
+    tiempo_promedio_en_el_sistema_por_tasa,
+    tiempo_promedio_en_cola_por_tasa,
+    promedio_de_utilizacion_del_servidor_tasa,
+    probabilidad_de_encontrar_n_clientes_en_cola_por_tasa_y_n_final,
+    probabilidad_de_denegacion_de_servicio_por_tasa_y_denegacion_n_final
 ):
-    # Métricas escalares
-    metrics_escalars = [
-        ("Clientes promedio en el sistema",   promedio_de_los_clientes_en_el_sistema_por_corrida_y_tasa, "Clientes"),
-        ("Clientes promedio en la cola",      promedio_de_los_clientes_en_la_cola_por_corrida_y_tasa, "Clientes"),
-        ("Tiempo promedio en el sistema",     tiempo_promedio_en_el_sistema_por_corrida_y_tasa, "Tiempo"),
-        ("Tiempo promedio en la cola",        tiempo_promedio_en_la_cola_por_corrida_y_tasa, "Tiempo"),
-        ("Utilización del servidor (ρ)",      promedio_de_utilizacion_del_servidor_por_corrida_y_tasa, "ρ")
+
+
+    # 1) Tabla de métricas numéricas
+    data = [
+        promedio_de_los_clientes_en_el_sistema_por_tasa,
+        promedio_de_los_clientes_en_cola_por_tasa,
+        tiempo_promedio_en_el_sistema_por_tasa,
+        tiempo_promedio_en_cola_por_tasa,
+        promedio_de_utilizacion_del_servidor_tasa
     ]
+    col_labels = [f"{t:.2f}" for t in tasas_arribo]
 
-    # Graficar cada métrica escalar
-    for titulo, datos, ylabel in metrics_escalars:
-        plt.figure(figsize=(8, 5))
-        corridas = sorted({d[0] for d in datos})
-        for corrida in corridas:
-            x = [d[1] for d in datos if d[0] == corrida]
-            y = [d[2] for d in datos if d[0] == corrida]
-            plt.plot(x, y, marker='o', label=f'Corrida {corrida}')
-        plt.title(titulo)
-        plt.xlabel('Tasa de arribo (λ)')
-        plt.ylabel(ylabel)
-        plt.grid(True)
-        plt.legend()
-        plt.tight_layout()
-        plt.show()
-
-    # Distribución de probabilidad de n clientes en cola
-    for corrida, tasa, distribucion in probabilidad_de_encontrar_n_clientes_en_cola_por_corrida_y_tasa:
-        plt.figure(figsize=(8, 5))
-        n_vals = [i for i in range(len(distribucion))]
-        p_vals = [par for par in distribucion]
-        plt.bar(n_vals, p_vals)
-        plt.title(f"P(n clientes en cola)\nCorrida {corrida}, λ={tasa}")
-        plt.xlabel("Clientes en cola (n)")
-        plt.ylabel("Probabilidad")
-        plt.grid(axis='y')
-        plt.tight_layout()
-        plt.show()
-"""
-def graficar_probabilidad_denegacion(data):
-    plt.figure(figsize=(10, 6))
-    corridas = sorted(set(d[0] for d in data))
-    for i in corridas:
-        tasas = sorted(set(d[1] for d in data if d[0] == i))
-        for tasa in tasas:
-            x = [d[2] for d in data if d[0] == i and d[1] == tasa]
-            y = [d[3] for d in data if d[0] == i and d[1] == tasa]
-            plt.plot(x, y, marker='o', label=f'Corrida {i}, Tasa {tasa}')
-    plt.title('Probabilidad de denegación de servicio por n')
-    plt.xlabel('Cantidad de clientes rechazados (n)')
-    plt.ylabel('Probabilidad')
-    plt.grid(True)
-    plt.legend()
-    plt.tight_layout()
+    fig, ax = plt.subplots(figsize=(len(tasas_arribo)*1.2, 3))
+    ax.axis('off')
+    tabla = ax.table(
+        cellText=data,
+        colLabels=col_labels,
+        rowLabels=[
+            "Clientes en sistema",
+            "Clientes en cola",
+            "Tiempo en sistema",
+            "Tiempo en cola",
+            "Utilización servidor"
+        ],
+        loc='center'
+    )
+    tabla.auto_set_font_size(False)
+    tabla.set_fontsize(10)
+    tabla.scale(1, 2)
+    ax.set_title("Métricas por tasa de arribo")
     plt.show()
 
-def graficar_probabilidad_encontrar_n_clientes(data):
-    plt.figure(figsize=(10, 6))
-    corridas = sorted(set(d[0] for d in data))
-    for i in corridas:
-        tasas = sorted(set(d[1] for d in data if d[0] == i))
-        for tasa in tasas:
-            x = [d[2] for d in data if d[0] == i and d[1] == tasa]
-            y = [d[3] for d in data if d[0] == i and d[1] == tasa]
-            plt.plot(x, y, marker='o', label=f'Corrida {i}, Tasa {tasa}')
-    plt.title('Probabilidad de encontrar exactamente n clientes en cola')
-    plt.xlabel('Cantidad de clientes en cola (n)')
-    plt.ylabel('Probabilidad')
-    plt.grid(True)
+    # 2) Evolución: clientes en cola
+    plt.figure()
+    for tasa, dist in zip(tasas_arribo, probabilidad_de_encontrar_n_clientes_en_cola_por_tasa_y_n_final):
+        xs = [n for (n, _) in dist]
+        ys = [p for (_, p) in dist]
+        plt.plot(xs, ys, label=f"Tasa {tasa:.2f}")
+    plt.xlabel("Número de clientes en cola")
+    plt.ylabel("Probabilidad")
+    plt.title("Evolución: Distribución de clientes en cola")
     plt.legend()
-    plt.tight_layout()
-    plt.show()    
+    plt.show()
+
+    # 3) Evolución: probabilidad de denegación
+    plt.figure()
+    for tasa, dist in zip(tasas_arribo, probabilidad_de_denegacion_de_servicio_por_tasa_y_denegacion_n_final):
+        xs = [n for (n, _) in dist]
+        ys = [p for (_, p) in dist]
+        plt.plot(xs, ys, label=f"Tasa {tasa:.2f}")
+    plt.xlabel("Número de clientes denegados")
+    plt.ylabel("Probabilidad de denegación")
+    plt.title("Evolución: Probabilidad de denegación de servicio")
+    plt.legend()
+    plt.show()
+
 
 #----------------------------------- Definicion de argumentos -----------------------------------
 
@@ -426,31 +379,124 @@ num_usuarios = args.n
 tasa_servicio = args.mu
 tasa_arribo = args.l
 
-# Rutina de inicializacion 
-
 
 def simular():
+    tasas_arribo = [
+        tasa_arribo,
+        0.25 * tasa_servicio,
+        0.5  * tasa_servicio,
+        0.75 * tasa_servicio,
+        0.99 * tasa_servicio,
+        1.25 * tasa_servicio
+    ]
+    denegaciones = [0, 2, 5, 10, 50]
 
-    tasas_arribo = [tasa_arribo , 0.25 * tasa_servicio, 0.5 * tasa_servicio, 0.75 * tasa_servicio, 0.99 * tasa_servicio, 1.25 * tasa_servicio]
-    promedio_de_los_clientes_en_el_sistema_por_corrida_y_tasa = []
-    promedio_de_los_clientes_en_cola_por_corrida_y_tasa = []
-    tiempo_promedio_en_el_sistema_por_corrida_y_tasa = []
-    tiempo_promedio_en_cola_por_corrida_y_tasa = []
-    promededio_de_utilizacion_del_servidor_por_corrida_y_tasa = []
-    probabilidad_de_encontrar_n_clientes_en_cola_por_corrida_y_tasa = []
-    probabilidad_de_denegacion_de_servicio_por_corrida_y_tasa = []
-    probabilidad_de_denegacion_de_servicio_por_corrida_tasa_y_denegacion_n = []
-    probabilidad_de_encontrar_n_clientes_en_cola_por_corrida_tasa_y_n = []
-    
-    
-    for i in range(num_corridas):
-        for tasa in tasas_arribo:
-            tiempos_arribos_clientes.clear()  
+    promedio_de_los_clientes_en_el_sistema_por_tasa = []
+    promedio_de_los_clientes_en_cola_por_tasa    = []
+    tiempo_promedio_en_el_sistema_por_tasa       = []
+    tiempo_promedio_en_cola_por_tasa             = []
+    promedio_de_utilizacion_del_servidor_tasa    = []
+
+    probabilidad_de_encontrar_n_clientes_en_cola_por_tasa_y_n_final = []
+    probabilidad_de_denegacion_de_servicio_por_tasa_y_denegacion_n_final = []
+
+    for tasa in tasas_arribo:
+        # inicializo acumuladores escalares
+        promedio_de_los_clientes_en_el_sistema_por_tasa.append(0.0)
+        promedio_de_los_clientes_en_cola_por_tasa.append(0.0)
+        tiempo_promedio_en_el_sistema_por_tasa.append(0.0)
+        tiempo_promedio_en_cola_por_tasa.append(0.0)
+        promedio_de_utilizacion_del_servidor_tasa.append(0.0)
+
+        # *** aquí creo listas NUEVAS para esta tasa ***
+        probabilidad_de_encontrar_n_clientes_en_cola_por_tasa_y_n = [
+            [usuario, 0.0] for usuario in range(num_usuarios + 1)
+        ]
+        probabilidad_de_denegacion_de_servicio_por_tasa_y_denegacion_n = [
+            [d, 0.0] for d in denegaciones
+        ]
+
+        # simulo num_corridas veces
+        for _ in range(num_corridas):
+            tiempos_arribos_clientes.clear()
             tiempos_retiros_clientes.clear()
+
             print("---------------------------------------------------------------------------------------------")
-            print("Los calculos para una tasa de ", tasa, "son:" )
+            print("Los cálculos para una tasa de", tasa, "son:")
+
             calcular_tiempo_arribo_salida(tasa, tasa_servicio, num_usuarios)
 
+            promedio_clientes_en_sistema = calcular_promedios_clientes_en_el_sistema()
+            promedio_clientes_en_cola    = calcular_promedio_de_clientes_en_el_cola()
+            tiempo_promedio_en_el_sistema = calcular_tiempo_promedio_en_el_sistema()
+            tiempo_promedio_en_cola      = calcular_tiempo_promedio_en_la_cola()
+            promedio_utilizacion_servidor= calcular_utilizacion_servidor()
+
+            # acumulo en las listas locales
+            probs_cola = calcular_probabilidad_de_encontrar_n_clientes_en_cola()
+            for idx, p in enumerate(probs_cola):
+                probabilidad_de_encontrar_n_clientes_en_cola_por_tasa_y_n[idx][1] += p
+
+            probs_deneg = probabilidad_de_denegacion_de_servicio()
+            for idx, pair in enumerate(probs_deneg):
+                probabilidad_de_denegacion_de_servicio_por_tasa_y_denegacion_n[idx][1] += pair[1]
+
+            """calcular_valores_estadisticos_teoricos(tasa_servicio, tasa, num_usuarios)"""
+
+            # acumulo escalars
+            promedio_de_los_clientes_en_el_sistema_por_tasa[-1] += promedio_clientes_en_sistema
+            promedio_de_los_clientes_en_cola_por_tasa[-1]    += promedio_clientes_en_cola
+            tiempo_promedio_en_el_sistema_por_tasa[-1]       += tiempo_promedio_en_el_sistema
+            tiempo_promedio_en_cola_por_tasa[-1]             += tiempo_promedio_en_cola
+            promedio_de_utilizacion_del_servidor_tasa[-1]    += promedio_utilizacion_servidor
+
+        # promediar escalars
+        promedio_de_los_clientes_en_el_sistema_por_tasa[-1] /= num_corridas
+        promedio_de_los_clientes_en_cola_por_tasa[-1]    /= num_corridas
+        tiempo_promedio_en_el_sistema_por_tasa[-1]       /= num_corridas
+        tiempo_promedio_en_cola_por_tasa[-1]             /= num_corridas
+        promedio_de_utilizacion_del_servidor_tasa[-1]    /= num_corridas
+
+        # promediar distribuciones
+        for i in range(len(probabilidad_de_encontrar_n_clientes_en_cola_por_tasa_y_n)):
+            probabilidad_de_encontrar_n_clientes_en_cola_por_tasa_y_n[i][1] /= num_corridas
+        for i in range(len(probabilidad_de_denegacion_de_servicio_por_tasa_y_denegacion_n)):
+            probabilidad_de_denegacion_de_servicio_por_tasa_y_denegacion_n[i][1] /= num_corridas
+
+        # guardo las listas NUEVAS en las finales
+        probabilidad_de_encontrar_n_clientes_en_cola_por_tasa_y_n_final.append(
+            probabilidad_de_encontrar_n_clientes_en_cola_por_tasa_y_n
+        )
+        probabilidad_de_denegacion_de_servicio_por_tasa_y_denegacion_n_final.append(
+            probabilidad_de_denegacion_de_servicio_por_tasa_y_denegacion_n
+        )
+
+
+    print("---------------------------------")
+    print("Promedio de clientes en el sistema por tasa: ", promedio_de_los_clientes_en_el_sistema_por_tasa)
+    print("Promedio de clientes en cola por tasa:       ", promedio_de_los_clientes_en_cola_por_tasa)
+    print("Tiempo promedio en el sistema por tasa:      ", tiempo_promedio_en_el_sistema_por_tasa)
+    print("Tiempo promedio en cola por tasa:            ", tiempo_promedio_en_cola_por_tasa)
+    print("Promedio de utilización del servidor por tasa:", promedio_de_utilizacion_del_servidor_tasa)
+
+    # print("Probabilidad de denegación de servicio por tasa y n: ", probabilidad_de_denegacion_de_servicio_por_tasa_y_denegacion_n_final)
+    # print("Probabilidad de encontrar n clientes en cola por tasa y n: ", probabilidad_de_encontrar_n_clientes_en_cola_por_tasa_y_n_final)
+
+    resumen_simulacion(
+    tasas_arribo,
+    promedio_de_los_clientes_en_el_sistema_por_tasa,
+    promedio_de_los_clientes_en_cola_por_tasa,
+    tiempo_promedio_en_el_sistema_por_tasa,
+    tiempo_promedio_en_cola_por_tasa,
+    promedio_de_utilizacion_del_servidor_tasa,
+    probabilidad_de_encontrar_n_clientes_en_cola_por_tasa_y_n_final,
+    probabilidad_de_denegacion_de_servicio_por_tasa_y_denegacion_n_final
+    )
+
+simular()
+
+"""         
+                ------------------------ Calculo POR CORRIDA Y POR TASA ----------------------------------
             promedio_clientes_en_sistema = calcular_promedios_clientes_en_el_sistema()
             promedio_de_los_clientes_en_el_sistema_por_corrida_y_tasa.append([i , tasa, round(promedio_clientes_en_sistema, 4)])
 
@@ -467,30 +513,16 @@ def simular():
             promededio_de_utilizacion_del_servidor_por_corrida_y_tasa.append([i ,tasa, round(promedio_utilizacion_del_servidor, 4)])
 
             probabilidad_de_encontrar_n_clientes_en_cola = calcular_probabilidad_de_encontrar_n_clientes_en_cola()
-            
-            
-            for h in range(0,len(probabilidad_de_encontrar_n_clientes_en_cola)):
-                probabilidad_de_encontrar_n_clientes_en_cola_por_corrida_tasa_y_n.append([i, tasa, h,probabilidad_de_encontrar_n_clientes_en_cola[h]])
-            """probabilidad_de_encontrar_n_clientes_en_cola =  calcular_probabilidad_de_encontrar_n_clientes_en_cola()
-            probabilidad_de_encontrar_n_clientes_en_cola_por_corrida_y_tasa.append([i ,tasa, probabilidad_de_encontrar_n_clientes_en_cola])"""
 
-            probabilidad_denegacion_de_servicio =  probabilidad_de_denegacion_de_servicio()
-            for n, p in probabilidad_denegacion_de_servicio:
-                probabilidad_de_denegacion_de_servicio_por_corrida_tasa_y_denegacion_n.append([i, tasa, n, p])
+            probabilidad_de_encontrar_n_clientes_en_cola =  calcular_probabilidad_de_encontrar_n_clientes_en_cola()
+            probabilidad_de_encontrar_n_clientes_en_cola_por_corrida_y_tasa.append([i ,tasa, probabilidad_de_encontrar_n_clientes_en_cola])
 
-            
-            calcular_valores_estadisticos_teoricos(tasa_servicio, tasa, num_usuarios)
-    
-    """graficar_metricas(promedio_de_los_clientes_en_el_sistema_por_corrida_y_tasa,
-    promedio_de_los_clientes_en_cola_por_corrida_y_tasa,
-    tiempo_promedio_en_el_sistema_por_corrida_y_tasa,
-    tiempo_promedio_en_cola_por_corrida_y_tasa,
-    promededio_de_utilizacion_del_servidor_por_corrida_y_tasa, probabilidad_de_encontrar_n_clientes_en_cola_por_corrida_y_tasa)"""
+            graficar_metricas(promedio_de_los_clientes_en_el_sistema_por_corrida_y_tasa,
+            promedio_de_los_clientes_en_cola_por_corrida_y_tasa,
+            tiempo_promedio_en_el_sistema_por_corrida_y_tasa,
+            tiempo_promedio_en_cola_por_corrida_y_tasa,
+            promededio_de_utilizacion_del_servidor_por_corrida_y_tasa, probabilidad_de_encontrar_n_clientes_en_cola_por_corrida_y_tasa)
 
-    graficar_probabilidad_denegacion(probabilidad_de_denegacion_de_servicio_por_corrida_tasa_y_denegacion_n)
-    graficar_probabilidad_encontrar_n_clientes(probabilidad_de_encontrar_n_clientes_en_cola_por_corrida_tasa_y_n)
-    
-
-simular()
-
-
+            graficar_probabilidad_denegacion(probabilidad_de_denegacion_de_servicio_por_corrida_tasa_y_denegacion_n)
+            graficar_probabilidad_encontrar_n_clientes(probabilidad_de_encontrar_n_clientes_en_cola_por_corrida_tasa_y_n)
+"""
