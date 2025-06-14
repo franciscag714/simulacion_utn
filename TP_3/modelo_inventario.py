@@ -1,15 +1,18 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import sys
+import os
 
 Q = int(sys.argv[2])
 R = int(sys.argv[4])
 costo_orden = int(sys.argv[6])
 costo_mantenimiento_unit = int(sys.argv[8])
 costo_faltante_unit = int(sys.argv[10])
+cant_valores_t = int(sys.argv[12])
 
-if sys.argv[1] != '-c' or sys.argv[3] != '-n' or sys.argv[5] !='-s' or sys.argv[7] !='-m' or sys.argv[9] !='-f':
-    print("Uso: python tp2_1.py -c <Valor maximo de inventario/default 50> -n <Punto de reorden/default 20> -s <costo orden/default 100> -m <costo_mantenimiento_unit/default 1> -f <costo_faltante_unit/default 5>")
+os.system('cls')
+if sys.argv[1] != '-c' or sys.argv[3] != '-n' or sys.argv[5] !='-s' or sys.argv[7] !='-m' or sys.argv[9] !='-f' or sys.argv[11] !='-t':
+    print("Uso: python tp2_1.py -c <Valor maximo de inventario/default 50> -n <Punto de reorden/default 20> -s <costo orden/default 100> -m <costo_mantenimiento_unit/default 1> -f <costo_faltante_unit/default 5> -t <cant_arribos/default 100>")
     sys.exit(1)
 
 # Estado del sistema
@@ -28,7 +31,7 @@ inventario_historico = [30]
 #calculo arribo de personas
 # Generar numeros pseudoaleatorios con distribucion de probabilidad exponencial (Usando transformada inversa)
 lambd = 0.45 # Valor de LAMBDA
-num_uniformes_para_exponencial = np.random.uniform(0,1,100) # num_uniformes_para_exponencial ~ U(0,1)
+num_uniformes_para_exponencial = np.random.uniform(0,1,cant_valores_t) # num_uniformes_para_exponencial ~ U(0,1)
 num_exponenciales = -np.log(1 - num_uniformes_para_exponencial) / lambd
 
 valores_t = [0]
@@ -105,18 +108,19 @@ plt.plot(costos["orden"], label="Costo de Orden")
 plt.plot(costos["mantenimiento"], label="Costo de Mantenimiento")
 plt.plot(costos["faltante"], label="Costo de Faltante")
 plt.plot(costos["total"], label="Costo Total")
-plt.xlabel("Indice valores T")
+plt.xlabel("Arribos")
 plt.ylabel("Costo")
-plt.title("Costos del Inventario a lo Largo del Tiempo")
+plt.title(f"Costos del Inventario a lo Largo del Tiempo con {cant_valores_t} arribos")
 plt.legend()
 plt.grid(True)
 plt.show()
 
 plt.figure(figsize=(12,6))
 plt.plot(valores_t, inventario_historico, label="Stock inventario")
-plt.xlabel("Valor T")
+plt.axhline(y=0, color='red', linestyle='--')
+plt.xlabel("Tiempo T")
 plt.ylabel("Inventario")
-plt.title("Stock de inventario a lo largo del tiempo")
+plt.title(f"Stock de inventario a lo largo del tiempo con {cant_valores_t} arribos")
 plt.legend()
 plt.grid(True)
 plt.show()
