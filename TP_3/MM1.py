@@ -9,7 +9,6 @@ import matplotlib.pyplot as plt
 # Lista para almacenar los tiempos de retiro de los clientes
 tiempos_arribos_clientes = []  # Lista para almacenar los tiempos de arribo de los clientes
 tiempos_retiros_clientes = []  
-
 # ---------------------------------- Definición de funciones auxiliares -----------------------------------
 def generador_arreglo_eventos():
     eventos = [] # arreglo bidimensional
@@ -29,7 +28,7 @@ def generador_numero_aleatorio():
 
 def calcular_demora(tiempos_arribos_clientes, tiempos_retiros_clientes):
     """demora = tiempo de todos los clientes que estan esperando en la cola. + la diferencia entre el cliente que esta en servicio con el tiempo de mi llegada"""
-    demora =  max(tiempos_retiros_clientes) - max(tiempos_arribos_clientes) 
+    demora =  tiempos_retiros_clientes[-1] - tiempos_arribos_clientes[-1]  # Agregar la demora a la lista de demoras
     return demora if demora > 0 else 0
 
 def calcular_tiempo_arribo_salida(tasa_arribo, tasa_servicio, cantidad_usuarios): 
@@ -37,8 +36,8 @@ def calcular_tiempo_arribo_salida(tasa_arribo, tasa_servicio, cantidad_usuarios)
         if i == 0:
             # Arribo del primer cliente
             numero_aleatorio_arribo = generador_numero_aleatorio()
-            nro_arribo_cliente = round(((-1/tasa_arribo)*math.log(numero_aleatorio_arribo)), 4)
-            tiempos_arribos_clientes.append(nro_arribo_cliente)
+            tiempo_arribo_cliente = round(((-1/tasa_arribo)*math.log(numero_aleatorio_arribo)), 4)
+            tiempos_arribos_clientes.append(tiempo_arribo_cliente)
             # Retiro del primer cliente
             numero_aleatorio_retiro = generador_numero_aleatorio()
             tiempo_retiro_cliente = round(((-1/tasa_servicio)*math.log(numero_aleatorio_retiro) + tiempos_arribos_clientes[i]), 4)
@@ -54,60 +53,54 @@ def calcular_tiempo_arribo_salida(tasa_arribo, tasa_servicio, cantidad_usuarios)
             tiempo_total_cliente = round(((-1/tasa_servicio)*math.log(numero_aleatorio_retiro) + tiempos_arribos_clientes[i] + demora), 4)
             tiempos_retiros_clientes.append(tiempo_total_cliente)
     
-    print("Tiempos de arribo de clientes:", tiempos_arribos_clientes)
-    print("Tiempos de retiro de clientes:", tiempos_retiros_clientes)
 
 
 def calcular_promedios_clientes_en_el_sistema():
-    print("\n--CALCULO PROMEDIO CLIENTES EN EL SISTEMA--\n")
     eventos = generador_arreglo_eventos()
     area = 0.0
-    tiempo_anterior = eventos[0][0]
-    cantidad_clientes_actuales = 1
+    tiempo_anterior = 0.0
+    cantidad_clientes_actuales = 0
 
-    for e in eventos[1:]:
+    for e in eventos:
         tiempo_evento, tipo_evento = e
         duracion_evento = tiempo_evento - tiempo_anterior
         tiempo_anterior = tiempo_evento
+        area += duracion_evento * cantidad_clientes_actuales
         if tipo_evento == +1:
-            area += duracion_evento * cantidad_clientes_actuales
             cantidad_clientes_actuales += 1
         elif tipo_evento == -1:
-            area += duracion_evento * cantidad_clientes_actuales
             cantidad_clientes_actuales -= 1
 
-    promedio_clientes = area / max(tiempos_retiros_clientes)
+    promedio_clientes = area / eventos[-1][0] 
     
     return promedio_clientes    
 
 
 def calcular_promedio_de_clientes_en_el_cola():
-    print("\n--CALCULO PROMEDIO CLIENTES EN COLA--\n")
+    
     eventos = generador_arreglo_eventos()
     area = 0.0
-    tiempo_anterior = eventos[0][0]
-    cantidad_clientes_actuales = 1
+    tiempo_anterior = 0.0
+    cantidad_clientes_actuales = 0
 
-    for e in eventos[1:]:
+    for e in eventos:
         tiempo_evento, tipo_evento = e
         duracion_evento = tiempo_evento - tiempo_anterior
         tiempo_anterior = tiempo_evento
-        if tipo_evento == +1: # Es decir, si el evento es un arribo
-            if cantidad_clientes_actuales > 1:
-                area += duracion_evento * (cantidad_clientes_actuales - 1)
+        if cantidad_clientes_actuales > 1:
+            area += duracion_evento * (cantidad_clientes_actuales - 1)
+        if tipo_evento == +1: 
             cantidad_clientes_actuales += 1
-        elif tipo_evento == -1: # Es decir, si el evento es un retiro
-            if cantidad_clientes_actuales > 1:
-                area += duracion_evento * (cantidad_clientes_actuales - 1)
+        elif tipo_evento == -1: 
             cantidad_clientes_actuales -= 1
 
-    promedio_clientes_en_cola = area / max(tiempos_retiros_clientes)
+    promedio_clientes_en_cola = area / eventos[-1][0]
     
     return promedio_clientes_en_cola
 
 
 def calcular_tiempo_promedio_en_el_sistema():
-    print("\n--CALCULO TIEMPO PROMEDIO EN EL SISTEMA--\n")
+    
     tiempo_total = 0.0
 
     for i in range(len(tiempos_retiros_clientes)):
@@ -120,33 +113,32 @@ def calcular_tiempo_promedio_en_el_sistema():
     return promedio_tiempo
 
 def calcular_tiempo_promedio_en_la_cola():
-    print("\n--CALCULO TIEMPO PROMEDIO EN COLA--\n")
+    
     eventos = generador_arreglo_eventos()
     tiempo_total = 0.0
     tiempo_anterior = eventos[0][0]
-    cantidad_clientes_actuales = 1
+    cantidad_clientes_actuales_en_cola = 0
 
     for e in eventos[1:]:
         tiempo_evento, tipo_evento = e
         duracion_evento = tiempo_evento - tiempo_anterior
         tiempo_anterior = tiempo_evento
-        if tipo_evento == +1: # Es decir, si el evento es un arribo
-            if cantidad_clientes_actuales > 1:
-                tiempo_total += duracion_evento 
-            cantidad_clientes_actuales += 1
-        elif tipo_evento == -1: # Es decir, si el evento es un retiro
-            if cantidad_clientes_actuales > 1:
-                tiempo_total += duracion_evento
-            cantidad_clientes_actuales -= 1
+        nq = max(0, cantidad_clientes_actuales_en_cola - 1)
 
-    cantidad_clientes = len(tiempos_retiros_clientes)  # se podria utilizar el parametro de entrada -n, ya que este es la cantidad de usuarios
+        tiempo_total += duracion_evento * nq
+        if tipo_evento == +1:
+            cantidad_clientes_actuales_en_cola += 1
+        elif tipo_evento == -1: 
+            cantidad_clientes_actuales_en_cola -= 1
+
+    cantidad_clientes = len(tiempos_retiros_clientes)  
     
     promedio_tiempo_en_cola = tiempo_total / cantidad_clientes
     
     return promedio_tiempo_en_cola
 
 def calcular_utilizacion_servidor():
-    print("\n--CALCULO UTILIZACION SERVIDOR--\n")
+    
     eventos = generador_arreglo_eventos()
     tiempo_total_en_servicio = 0.0 # tiempo en que el peluquero esta activo
     tiempo_anterior = eventos[0][0]
@@ -172,41 +164,41 @@ def calcular_utilizacion_servidor():
     
 
 def calcular_probabilidad_de_encontrar_n_clientes_en_cola():
-    print("\n--CALCULO PROBABILIDAD DE ENCONTRAR N CLIENTES EN COLA--\n")
     eventos = generador_arreglo_eventos()
-    tiempo_n_cliente_en_cola = []
+
+    tiempo_n_cliente_en_cola = [0.0]
     probabilidad_de_n_clientes_en_cola = []
 
-    tiempo_total = 0.0
-    tiempo_anterior = 0
+    tiempo_anterior = eventos[0][0]
     cantidad_clientes_actuales = 0
 
-    for e in eventos:
-        tiempo_evento, tipo_evento = e
+
+    for tiempo_evento, tipo_evento in eventos[1:]:
         duracion_evento = tiempo_evento - tiempo_anterior
         tiempo_anterior = tiempo_evento
 
-        if cantidad_clientes_actuales >= len(tiempo_n_cliente_en_cola):
-            tiempo_n_cliente_en_cola.append(0.0)
+        nq = max(0, cantidad_clientes_actuales - 1)
 
-        if tipo_evento == +1: 
-            tiempo_n_cliente_en_cola[cantidad_clientes_actuales] += duracion_evento 
+      
+        if nq >= len(tiempo_n_cliente_en_cola):
+            tiempo_n_cliente_en_cola.extend([0.0] * (nq - len(tiempo_n_cliente_en_cola) + 1))
+
+        tiempo_n_cliente_en_cola[nq] += duracion_evento
+
+        if tipo_evento == +1:
             cantidad_clientes_actuales += 1
-        elif tipo_evento == -1: 
-            tiempo_n_cliente_en_cola[cantidad_clientes_actuales] += duracion_evento 
+        elif tipo_evento == -1:
             cantidad_clientes_actuales -= 1
 
-    tiempo_total = max(tiempos_retiros_clientes) 
-    
-  
-    for i in range(len(tiempo_n_cliente_en_cola)):
-        probabilidad_de_n_clientes_en_cola.append(0.0) # Inicializar la lista de probabilidades con ceros
-        probabilidad_de_n_clientes_en_cola[i] = tiempo_n_cliente_en_cola[i]/tiempo_total
-        
+    tiempo_total = max(tiempos_retiros_clientes)
+
+    for t in tiempo_n_cliente_en_cola:
+        probabilidad_de_n_clientes_en_cola.append(t / tiempo_total)
+
     return probabilidad_de_n_clientes_en_cola
 
+
 def probabilidad_de_denegacion_de_servicio():
-    print("\n--CALCULO PROBABILIDAD DE DENEGACION DE SERVICIO--\n")
     k = [[0,0.0], [2,0.0], [5,0.0], [10,0.0], [50,0.0]]
     eventos = generador_arreglo_eventos()
     
@@ -233,7 +225,6 @@ def probabilidad_de_denegacion_de_servicio():
     
 
 def calcular_valores_estadisticos_teoricos(tasa_servicio, tasa_arribo, cant_clientes):
-    print("\n--CALCULO VALORES ESTADISTICOS TEORICOS--\n")
     utilizacion_servidor, numero_promedio_de_clientes_en_el_sistema, numero_promedio_clientes_en_cola, tiempo_promedio_en_el_sistema, tiempo_promedio_en_cola = calculos_estadisticos_generales(tasa_servicio, tasa_arribo)
     probabilidad_n_clientes_en_cola = calcular_probabilidades_n_clientes_en_cola_teorica(utilizacion_servidor, cant_clientes)
     probabilidades_denegacion_servicio = calcular_probabilidad_denegacion_servicio_teorica(utilizacion_servidor)
@@ -287,32 +278,41 @@ def resumen_simulacion(
 
     # 1) Tabla de métricas numéricas
     data = [
-        promedio_de_los_clientes_en_el_sistema_por_tasa,
-        promedio_de_los_clientes_en_cola_por_tasa,
-        tiempo_promedio_en_el_sistema_por_tasa,
-        tiempo_promedio_en_cola_por_tasa,
-        promedio_de_utilizacion_del_servidor_tasa
+        [round(val, 5) for val in promedio_de_los_clientes_en_el_sistema_por_tasa],
+        [round(val, 5) for val in promedio_de_los_clientes_en_cola_por_tasa],
+        [round(val, 5) for val in tiempo_promedio_en_el_sistema_por_tasa],
+        [round(val, 5) for val in tiempo_promedio_en_cola_por_tasa],
+        [round(val, 5) for val in promedio_de_utilizacion_del_servidor_tasa]
     ]
+
     col_labels = [f"{t:.2f}" for t in tasas_arribo]
+    row_labels = [
+        "Clientes promedio en sistema",
+        "Clientes promedio en cola",
+        "Tiempo promedio en sistema",
+        "Tiempo promedio en cola",
+        "Utilización servidor"
+    ]
 
     fig, ax = plt.subplots(figsize=(len(tasas_arribo)*1.2, 3))
     ax.axis('off')
+
     tabla = ax.table(
         cellText=data,
         colLabels=col_labels,
-        rowLabels=[
-            "Clientes en sistema",
-            "Clientes en cola",
-            "Tiempo en sistema",
-            "Tiempo en cola",
-            "Utilización servidor"
-        ],
-        loc='center'
+        rowLabels=row_labels,
+        loc='center',
+        cellLoc='center',
+        rowLoc='center',
+        bbox=[0.1, 0.1, 0.9, 0.8]  # [x0, y0, width, height] => mueve todo un poco a la derecha
     )
-    tabla.auto_set_font_size(False)
+
+    tabla.auto_set_font_size(True)
     tabla.set_fontsize(10)
     tabla.scale(1, 2)
-    ax.set_title("Métricas por tasa de arribo")
+    ax.set_title("Métricas por tasa de arribo", fontsize=12, pad=15)
+
+    plt.tight_layout()
     plt.show()
 
     # 2) Evolución: clientes en cola
@@ -323,6 +323,8 @@ def resumen_simulacion(
         plt.plot(xs, ys, label=f"Tasa {tasa:.2f}")
     plt.xlabel("Número de clientes en cola")
     plt.ylabel("Probabilidad")
+    plt.grid()
+
     plt.title("Evolución: Distribución de clientes en cola")
     plt.legend()
     plt.show()
@@ -335,6 +337,8 @@ def resumen_simulacion(
         plt.plot(xs, ys, label=f"Tasa {tasa:.2f}")
     plt.xlabel("Número de clientes denegados")
     plt.ylabel("Probabilidad de denegación")
+    plt.grid()
+    plt.xticks([0, 2, 5, 10, 50])
     plt.title("Evolución: Probabilidad de denegación de servicio")
     plt.legend()
     plt.show()
@@ -358,9 +362,9 @@ if (args.c <= 0):
     print("Error: la cantidad de corridas (-c) debe ser un entero positivo.")
     sys.exit(1)
 
-if (args.c < 10):
+"""if (args.c < 10):
     print("Error: la cantidad de corridas (-c) debe ser MAYOR o igual a 10.")
-    sys.exit(1)
+    sys.exit(1)"""
 
 if (args.n <= 0):
     print("Error: la cantidad de usuarios a simular (-n) debe ser un entero positivo.")
@@ -408,7 +412,7 @@ def simular():
         tiempo_promedio_en_cola_por_tasa.append(0.0)
         promedio_de_utilizacion_del_servidor_tasa.append(0.0)
 
-        # *** aquí creo listas NUEVAS para esta tasa ***
+        
         probabilidad_de_encontrar_n_clientes_en_cola_por_tasa_y_n = [
             [usuario, 0.0] for usuario in range(num_usuarios + 1)
         ]
@@ -478,10 +482,10 @@ def simular():
     print("Tiempo promedio en el sistema por tasa:      ", tiempo_promedio_en_el_sistema_por_tasa)
     print("Tiempo promedio en cola por tasa:            ", tiempo_promedio_en_cola_por_tasa)
     print("Promedio de utilización del servidor por tasa:", promedio_de_utilizacion_del_servidor_tasa)
-
+    print("Probabilidad de encontrar n clientes en cola por tasa y n: ", probabilidad_de_encontrar_n_clientes_en_cola_por_tasa_y_n_final)
+    print("Probabilidad de denegación de servicio por tasa y n: ", probabilidad_de_denegacion_de_servicio_por_tasa_y_denegacion_n_final)
     # print("Probabilidad de denegación de servicio por tasa y n: ", probabilidad_de_denegacion_de_servicio_por_tasa_y_denegacion_n_final)
     # print("Probabilidad de encontrar n clientes en cola por tasa y n: ", probabilidad_de_encontrar_n_clientes_en_cola_por_tasa_y_n_final)
-
     resumen_simulacion(
     tasas_arribo,
     promedio_de_los_clientes_en_el_sistema_por_tasa,
