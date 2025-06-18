@@ -238,13 +238,21 @@ def calculos_estadisticos_generales(tasa_servicio, tasa_arribo):
 def calcular_probabilidades_n_clientes_en_cola_teorica(utilizacion_servidor, cant_clientes):
     probabilidad_n_clientes_en_cola_por_corrida = []
     for n in range(0, cant_clientes + 1):  
-        if n == 0:
-            probabilidad_n_clientes = 1 - utilizacion_servidor
-        else:
-            probabilidad_n_clientes = (utilizacion_servidor ** (n+1)) * ((1 - utilizacion_servidor))
+        try:
+            if n == 0:
+                probabilidad_n_clientes = 1 - utilizacion_servidor
+            else:
+                probabilidad_n_clientes = (utilizacion_servidor ** (n + 1)) * (1 - utilizacion_servidor)
+        except (OverflowError, ValueError):
+            print(f"Error al calcular la probabilidad para n={n}. Se detiene el cálculo por número muy grande.")
+            probabilidad_n_clientes = "Resultado demasiado grande"
+            break
+        
         probabilidad_n_clientes_en_cola_por_corrida.append(probabilidad_n_clientes)
-    
+
     return probabilidad_n_clientes_en_cola_por_corrida
+
+
 
 def calcular_probabilidad_denegacion_servicio_teorica(utilizacion_servidor):
     ks = [0, 2, 5, 10, 50]
