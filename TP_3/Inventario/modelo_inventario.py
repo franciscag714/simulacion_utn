@@ -78,7 +78,7 @@ for arribo in range(len(valores_t) - 1):
 
     # 4. Calcular costos
 
-    costo_mant_total = costo_mant_total + max(0, inventario * costo_mantenimiento_unit)
+    costo_mant_total = costo_mant_total + max(0, inventario * costo_mantenimiento_unit)                  # Chequear el tema del tiempo
     costo_falt_total = costo_falt_total + (producto_faltante * costo_faltante_unit)
     costo_total = costo_orden_total + costo_mant_total + costo_falt_total
 
